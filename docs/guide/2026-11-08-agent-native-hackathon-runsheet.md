@@ -13,7 +13,9 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - **Prior art:** no past winners. Judges compare against Builder's own first-party apps (design, slides, analytics, calendar, mail, forms, tasks, CRM, content, dispatch…) — a clone of one loses head-to-head.
 
 ## Project repo
-- **`Dotman-Bei/sortboard`** — private; pipeline-created as `agent-native-hackathon-2026`, renamed by idea-forge Step 4 on 2026-11-08 (verified: `gh repo view` → Dotman-Bei/sortboard, PRIVATE, description = brief's one-liner; local `origin` → sortboard). Local clone folder keeps the OLD name: `…/Hackathons/agent-native-hackathon-2026` (sibling of the kit). Every kickoff's `REPO:` uses `Dotman-Bei/sortboard`.
+- **`Dotman-Bei/stigi`** — private. History: pipeline-created as `agent-native-hackathon-2026` → renamed `sortboard` by idea-forge Step 4 → renamed **`stigi`** by the guide on the user's request, 2026-11-08 ~22:00 WAT (verified: `gh repo view Dotman-Bei/stigi` → PRIVATE; `sortboard` URL redirects; local `origin` → stigi, `ls-remote` = HEAD). Local clone folder keeps the OLD name: `…/Hackathons/agent-native-hackathon-2026` (sibling of the kit). Every kickoff's `REPO:` uses `Dotman-Bei/stigi`.
+- **Product name: Stigi** (from *stigmergy* — coordination through marks on a shared medium). Chosen by the user over Murmuro/Stigmo/Murma. The committed brief `docs/idea-forge/2026-11-08-sortboard-brief.md` keeps its filename and its working title "Sortboard" (the brief itself says the builder may rename); the architect kickoff's PROJECT line carries the new name. Collision check (DNS/npm/GitHub only, not a trademark search): npm `stigi` free, GitHub user free, stigi.com/.app/.ai no DNS records.
+- Git note: this machine's default git credential helper stalled on `fetch`/`ls-remote` after the rename; `git -c credential.helper= -c "credential.helper=!gh auth git-credential" <cmd>` works.
 - Kit checkout: `…/Hackathons/build-system` (origin `bitnormie01/build-system`), synced to origin/main `230bbc8` on 2026-11-08. (The prompt said `~/hackathons/build-system`; the kit actually lives in the Hackathons workspace folder — same layout, different path.)
 
 ## Tollgate
@@ -64,7 +66,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - **Sortboard FITS**, as a vertical slice. Longest pole is the board (DnD + live-sync animation); everything else is CRUD actions. Build budget ~14–16h of the ~35h leaves ~6h+ slack for fixes, the Clips take and submission. No idea-forge re-run needed.
 - Guard added to the architect kickoff: order plans so the money shot (drag two notes → agent names cluster → ~12 notes move) works end-to-end FIRST; report/export and polish after; stretch features flagged, never blocking.
 - Risks to watch: LLM path undecided (C3); pre-1.0 framework churn (pin version); hosted agent turn ~40–60s soft timeout (sorting must be batched — the pack says continuation is supported); frontend kit is a marketing-site skill applied to an app (kit subset committed at `docs/design/frontend-kit/`, commit `4f18b8c`).
-- Name check: "Sortboard" collides only with a 2021 Cito classroom prototype and a small GitHub lib — low risk; user may rename later.
+- Name: renamed to Stigi (see Project repo) — the Sortboard collision note is moot.
 
 ## Next action
 - **User:** (a) Node ≥22.22 upgrade (still BLOCKS Step 2 — do it during the architect dialogue); (b) open a fresh session at `opus` / effort `xhigh`, paste the Step 1 architect kickoff from chat; (c) have an answer ready for "which LLM path" (own Anthropic/OpenAI key in the git-ignored `.env`, or the Builder.io connection).
