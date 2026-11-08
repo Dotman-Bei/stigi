@@ -20,7 +20,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 ## Tollgate
 - Report: `docs/tollgate/2026-11-08-tollgate.md` (commit `1bd6ce8`, Step 0a Stage 0). Verified by the guide 2026-11-08 ~21:00 WAT against the committed file.
 - **Verdicts:** 0a CLEAR · 0 CLEAR · 1 CLEAR · **2 BLOCKED — row C1: Node v22.17.1 < required 22.22** (user fix: `winget upgrade OpenJS.NodeJS.LTS`, then `node --version`; open a NEW shell afterwards) · 2.5 skipped · 3 CLEAR (provisional; rows 5 and 7 passed in the 0a session only — Step 3 re-probes).
-- Campaign rows: C2 pnpm 10.33 PASS · **C3 LLM provider path — UNPROBED; hard for Step 2** (guide check: `ANTHROPIC_API_KEY` not set in this shell) · **C4 Clips account — UNPROBED; hard for Step 3**.
+- Campaign rows: C2 pnpm 10.33 PASS · **C3 LLM provider path — UNPROBED; hard for Step 2** (guide check: `ANTHROPIC_API_KEY` not set in this shell) · **C4 Clips account — user-attested 2026-11-08 ~21:10 WAT: account created in their Chrome (guide did not verify; Step 3 re-probes, must confirm the clip stays public)**.
 - Routing (row 18): per-spawn effort available; top=`claude-opus-5-5`, standard=`claude-sonnet-5-5`, fast=`claude-haiku-5-5` verified; no env overrides; executor variants not installed yet (orchestrator installs at Step 2 boot).
 - Note: row 7's probe opened a signed-in Gmail inbox in the user's Chrome (no mail read), as the matrix prescribes.
 
@@ -63,10 +63,10 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 
 ## Next action
 - **User:** open a fresh session at `opus` / effort `max` (set again — `max` is per-session), paste the Step 0 (idea-forge) kickoff from chat. Target: brief committed by ~22:00 WAT.
-- **User, in parallel, before Step 2 (not before Step 0/1):** (1) upgrade Node ≥22.22; (2) sign into https://clips.agent-native.com (Google) once; (3) decide the LLM path (Anthropic/OpenAI key or the "Use Builder.io" connection) — the architect will ask.
+- **User, in parallel, before Step 2 (not before Step 0/1):** (1) upgrade Node ≥22.22; (2) ~~sign into Clips~~ done (user-attested); (3) decide the LLM path (Anthropic/OpenAI key or the "Use Builder.io" connection) — the architect will ask.
 - **Guide, when idea-forge reports:** verify brief committed + pushed + Feasibility notes + emitted architect block (must carry the frontend DOCS/CONSTRAINTS lines), do the calendar-fit call (~34h left at that point), then prep Step 1.
 
 ## Open blockers
 - Step 2 BLOCKED on tollgate C1 (Node ≥22.22) — user action, ~5 min.
-- C3 (LLM key/path) and C4 (Clips account) unresolved — hard for Step 2 / Step 3 respectively. Recommend a concierge **preflight** pass in parallel with the build for the key + Clips sign-in.
+- C3 (LLM key/path) unresolved — hard for Step 2. C4 (Clips account) user-attested, re-probed at Step 3. Recommend a concierge **preflight** pass in parallel with the build for the LLM key.
 - MY SKILLS / goal were template placeholders; assumed TypeScript/React and Grand-Prize goal. User to confirm.
