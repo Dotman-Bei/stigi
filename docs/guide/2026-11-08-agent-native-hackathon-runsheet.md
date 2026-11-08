@@ -13,8 +13,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - **Prior art:** no past winners. Judges compare against Builder's own first-party apps (design, slides, analytics, calendar, mail, forms, tasks, CRM, content, dispatch…) — a clone of one loses head-to-head.
 
 ## Project repo
-- `Dotman-Bei/agent-native-hackathon-2026` — **private**, pipeline-created by the guide per `references/repo-bootstrap.md` (event-named form). Clone: `…/Hackathons/agent-native-hackathon-2026`, sibling of the kit.
-- Expect the rename to `<project-slug>` at idea-forge Step 4; update this line + every later `REPO:` when it happens.
+- **`Dotman-Bei/sortboard`** — private; pipeline-created as `agent-native-hackathon-2026`, renamed by idea-forge Step 4 on 2026-11-08 (verified: `gh repo view` → Dotman-Bei/sortboard, PRIVATE, description = brief's one-liner; local `origin` → sortboard). Local clone folder keeps the OLD name: `…/Hackathons/agent-native-hackathon-2026` (sibling of the kit). Every kickoff's `REPO:` uses `Dotman-Bei/sortboard`.
 - Kit checkout: `…/Hackathons/build-system` (origin `bitnormie01/build-system`), synced to origin/main `230bbc8` on 2026-11-08. (The prompt said `~/hackathons/build-system`; the kit actually lives in the Hackathons workspace folder — same layout, different path.)
 
 ## Tollgate
@@ -55,18 +54,22 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 | Step | Status | Artifact | Verified | Seat settings |
 |---|---|---|---|---|
 | 0a | **done** | `docs/resources/2026-11-08-agent-native-hackathon/` (commit `134ffb0`) + tollgate `1bd6ce8` | guide read all 7 files; deadline/rubric/prizes cross-agree with rules page + guide's own earlier fetch; gaps are labelled | `claude-opus-5-5` · high (user-attested) |
-| 0 | pending | — | — | — |
+| 0 | **done** | `docs/idea-forge/2026-11-08-sortboard-brief.md` (commit `3fd2910`, on origin/main) | guide read in full: all required fields present incl. Feasibility notes (transcribed from the pack); architect block carries DOCS + the frontend CONSTRAINTS line; repo rename verified | `claude-opus-5-5` · max (user-attested) |
 | 1 | pending | — | — | — |
 | 2 | pending | — | — | — |
 | 2.5 | skipped | — | — | — |
 | 3 | pending | — | — | — |
 
+## Calendar-fit call (2026-11-08 ~21:30 WAT, ~35h to deadline)
+- **Sortboard FITS**, as a vertical slice. Longest pole is the board (DnD + live-sync animation); everything else is CRUD actions. Build budget ~14–16h of the ~35h leaves ~6h+ slack for fixes, the Clips take and submission. No idea-forge re-run needed.
+- Guard added to the architect kickoff: order plans so the money shot (drag two notes → agent names cluster → ~12 notes move) works end-to-end FIRST; report/export and polish after; stretch features flagged, never blocking.
+- Risks to watch: LLM path undecided (C3); pre-1.0 framework churn (pin version); hosted agent turn ~40–60s soft timeout (sorting must be batched — the pack says continuation is supported); frontend kit is a marketing-site skill applied to an app (kit subset committed at `docs/design/frontend-kit/`, commit `4f18b8c`).
+- Name check: "Sortboard" collides only with a 2021 Cito classroom prototype and a small GitHub lib — low risk; user may rename later.
+
 ## Next action
-- **User:** open a fresh session at `opus` / effort `max` (set again — `max` is per-session), paste the Step 0 (idea-forge) kickoff from chat. Target: brief committed by ~22:00 WAT.
-- **User, in parallel, before Step 2 (not before Step 0/1):** (1) upgrade Node ≥22.22; (2) ~~sign into Clips~~ done (user-attested); (3) decide the LLM path (Anthropic/OpenAI key or the "Use Builder.io" connection) — the architect will ask.
-- **Guide, when idea-forge reports:** verify brief committed + pushed + Feasibility notes + emitted architect block (must carry the frontend DOCS/CONSTRAINTS lines), do the calendar-fit call (~34h left at that point), then prep Step 1.
+- **User:** (a) Node ≥22.22 upgrade (still BLOCKS Step 2 — do it during the architect dialogue); (b) open a fresh session at `opus` / effort `xhigh`, paste the Step 1 architect kickoff from chat; (c) have an answer ready for "which LLM path" (own Anthropic/OpenAI key in the git-ignored `.env`, or the Builder.io connection).
+- **Guide, when architect reports:** verify spec + plans + manifest (Stage-4 validation), submission draft, Stack requirements in the tollgate, model-tier pins; re-probe stack rows; recommend `checkpoint` review mode; prep Step 2 (+ concierge preflight only if the LLM key needs a gate).
 
 ## Open blockers
 - Step 2 BLOCKED on tollgate C1 (Node ≥22.22) — user action, ~5 min.
-- C3 (LLM key/path) unresolved — hard for Step 2. C4 (Clips account) user-attested, re-probed at Step 3. Recommend a concierge **preflight** pass in parallel with the build for the LLM key.
-- MY SKILLS / goal were template placeholders; assumed TypeScript/React and Grand-Prize goal. User to confirm.
+- C3 (LLM path) unresolved — hard for Step 2; architect will ask. C4 Clips account user-attested; Step 3 re-probes.
