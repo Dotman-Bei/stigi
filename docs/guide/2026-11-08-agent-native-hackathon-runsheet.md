@@ -1,6 +1,6 @@
 # Runsheet — Agent-Native Hackathon (Builder.io)
 
-_Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). Updated 2026-11-08 20:30 WAT._
+_Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). Updated 2026-11-08 21:00 WAT (~36h left)._
 
 ## Event
 - **Name / URL:** Agent-Native Hackathon — https://www.builder.io/hackathon (rules: /hackathon/rules · submit: /hackathon/submit)
@@ -8,8 +8,9 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - **Prizes:** $10,000 — 1st $5,000 · 2nd $2,500 · 3rd $1,500 · 4th $750 · 5th $250. Four *recognition categories* (no extra cash): Best Overall App, Best Productivity App, Most Creative App, Best Use of Agent-Native.
 - **Judging (one rubric, verbatim weights from event page):** Usefulness & Execution 40% · Creativity & Design 20% · Innovation 20% · Cleverness & Use of Agent-Native 20%.
 - **Required:** a working app built with the Agent-Native framework (agent + UI sharing the same data/actions) + a **public Clips demo** recorded by the builder + submission via the submit page.
-- **Unverified (page only; rules/submit pages NOT yet read):** team-size cap, submission form fields, public-repo requirement, Clips account requirement. → Step 0a must capture these.
-- Source: event page fetched 2026-11-08 by the guide's helper subagent (single fetch, HTTP 200).
+- **Resolved by the pack (Rules are controlling):** no team-size cap stated · repo need NOT be public (public repo/live deploy "encouraged") · Clips demo is mandatory, must be recorded with Clips and viewable without login (no password/expiry; length unspecified) · "naming or importing the framework alone is not enough" · must identify pre-existing work/templates/third-party assets and what changed since Oct 27 · submit form: first name*, email*, project name*, description*, public Clips URL*, consent*; optional last name, GitHub URL, slides URL. Recording alone does not submit — confirm receipt.
+- **Remaining gaps:** Clips length limit; how recognition categories are picked; whether a self-hosted Clips link counts.
+- **Prior art:** no past winners. Judges compare against Builder's own first-party apps (design, slides, analytics, calendar, mail, forms, tasks, CRM, content, dispatch…) — a clone of one loses head-to-head.
 
 ## Project repo
 - `Dotman-Bei/agent-native-hackathon-2026` — **private**, pipeline-created by the guide per `references/repo-bootstrap.md` (event-named form). Clone: `…/Hackathons/agent-native-hackathon-2026`, sibling of the kit.
@@ -17,11 +18,11 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - Kit checkout: `…/Hackathons/build-system` (origin `bitnormie01/build-system`), synced to origin/main `230bbc8` on 2026-11-08. (The prompt said `~/hackathons/build-system`; the kit actually lives in the Hackathons workspace folder — same layout, different path.)
 
 ## Tollgate
-- **No report yet** — Step 0a's Stage 0 creates `docs/tollgate/2026-11-08-tollgate.md`.
-- Guide preflight, 2026-11-08 (read-only): row 1 git 2.54 + identity set — PASS · row 2 gh logged in as Dotman-Bei — PASS · row 3 kit at origin/main — PASS · row 4 repo created — PASS · row 9 Node v22.17.1 / npm 10.9.2 — PASS · row 16 ~92 GB free — PASS · row 18 env: `CLAUDE_CODE_EFFORT_LEVEL`, `…SUBAGENT_MODEL_FORCE`, `…SUBAGENT_MODEL` all unset — no routing warnings.
-- Row 5 (claude-in-chrome) is session-scoped: **not asserted** — the 0a session must have the extension connected and re-probes it itself.
-- Strategy strikes (so Stage 0 marks N-A): Step 2.5 rows 10–13 & 16 (demo-studio skipped), wallet rows 6/8/12 (no Web3).
-- Verdicts: 0a: pending Stage 0 · others: pending.
+- Report: `docs/tollgate/2026-11-08-tollgate.md` (commit `1bd6ce8`, Step 0a Stage 0). Verified by the guide 2026-11-08 ~21:00 WAT against the committed file.
+- **Verdicts:** 0a CLEAR · 0 CLEAR · 1 CLEAR · **2 BLOCKED — row C1: Node v22.17.1 < required 22.22** (user fix: `winget upgrade OpenJS.NodeJS.LTS`, then `node --version`; open a NEW shell afterwards) · 2.5 skipped · 3 CLEAR (provisional; rows 5 and 7 passed in the 0a session only — Step 3 re-probes).
+- Campaign rows: C2 pnpm 10.33 PASS · **C3 LLM provider path — UNPROBED; hard for Step 2** (guide check: `ANTHROPIC_API_KEY` not set in this shell) · **C4 Clips account — UNPROBED; hard for Step 3**.
+- Routing (row 18): per-spawn effort available; top=`claude-opus-5-5`, standard=`claude-sonnet-5-5`, fast=`claude-haiku-5-5` verified; no env overrides; executor variants not installed yet (orchestrator installs at Step 2 boot).
+- Note: row 7's probe opened a signed-in Gmail inbox in the user's Chrome (no mail read), as the matrix prescribes.
 
 ## Goal
 - **Assumed (user left the template placeholder):** win the Grand Prize ($5,000) with an Agent-Native app; secondary: one recognition category.
@@ -53,7 +54,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 ## Step status
 | Step | Status | Artifact | Verified | Seat settings |
 |---|---|---|---|---|
-| 0a | pending | — | — | — |
+| 0a | **done** | `docs/resources/2026-11-08-agent-native-hackathon/` (commit `134ffb0`) + tollgate `1bd6ce8` | guide read all 7 files; deadline/rubric/prizes cross-agree with rules page + guide's own earlier fetch; gaps are labelled | `claude-opus-5-5` · high (user-attested) |
 | 0 | pending | — | — | — |
 | 1 | pending | — | — | — |
 | 2 | pending | — | — | — |
@@ -61,8 +62,11 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 | 3 | pending | — | — | — |
 
 ## Next action
-- **User:** open a fresh session at `opus` / effort `high`, connect the Chrome extension, paste the Step 0a kickoff (given in chat).
+- **User:** open a fresh session at `opus` / effort `max` (set again — `max` is per-session), paste the Step 0 (idea-forge) kickoff from chat. Target: brief committed by ~22:00 WAT.
+- **User, in parallel, before Step 2 (not before Step 0/1):** (1) upgrade Node ≥22.22; (2) sign into https://clips.agent-native.com (Google) once; (3) decide the LLM path (Anthropic/OpenAI key or the "Use Builder.io" connection) — the architect will ask.
+- **Guide, when idea-forge reports:** verify brief committed + pushed + Feasibility notes + emitted architect block (must carry the frontend DOCS/CONSTRAINTS lines), do the calendar-fit call (~34h left at that point), then prep Step 1.
 
 ## Open blockers
-- Goal / skills left as template placeholders — assumed (TypeScript/React). User to confirm or correct.
-- Rules + submit pages unread (team cap, submission fields, public-repo, Clips account) — resolved by 0a.
+- Step 2 BLOCKED on tollgate C1 (Node ≥22.22) — user action, ~5 min.
+- C3 (LLM key/path) and C4 (Clips account) unresolved — hard for Step 2 / Step 3 respectively. Recommend a concierge **preflight** pass in parallel with the build for the key + Clips sign-in.
+- MY SKILLS / goal were template placeholders; assumed TypeScript/React and Grand-Prize goal. User to confirm.
