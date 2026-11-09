@@ -44,3 +44,7 @@ data/*.lock
 
 .vercel
 .env.local
+
+# Playwright run output
+test-results/
+playwright-report/
