@@ -49,3 +49,7 @@
   .shot--tall > img { object-position: 67% 0; }
   .steps-rows > li > p { padding-left: 0; }
 }
+
+/* Stigi logo lockup (docs/brand/logo; the client's logo replaces the kit's dealt mark + name) */
+.nav__logo img.brand-logo { height: 32px; width: auto; display: block; }
+@media (max-width: 639px) { .nav__logo img.brand-logo { height: 28px; } }

@@ -21,7 +21,8 @@ describe("landing page", () => {
     expect(html).toContain('--font-display: "Host Grotesk"');
     expect(html).toContain("family=Host+Grotesk");
     expect(html).toContain('href="/landing/assets/system.css"');
-    expect(html).toContain('data-mark="ring"');
+    // The user's Stigi logo lockup replaced the dealt ring mark in nav and footer (docs/brand/logo).
+    expect(html.match(/<img class="brand-logo" src="\/landing\/assets\/brand\/stigi-logo\.svg" alt="Stigi"/g) ?? []).toHaveLength(2);
   });
 
   it("leads with the h1 and the one main action in nav, hero and close", () => {
