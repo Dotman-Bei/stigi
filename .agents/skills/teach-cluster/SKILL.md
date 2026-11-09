@@ -10,7 +10,9 @@ The user taught you a theme by putting seed notes together. Generalize it in ONE
 1. Read the request context: `clusterId=<id>` and the seed notes. If the context is missing, call
    `view-screen` and use `selectedCluster` (or the cluster the user names).
 2. Decide the seeds' shared theme in 2–4 words (for example "Plan & billing confusion") and call
-   `rename-cluster` with `{ clusterId, name }`.
+   `rename-cluster` with `{ clusterId, name }` FIRST and ALONE: make it the only tool call in that step
+   and wait for its result before calling any other tool, so the user sees the cluster get its name
+   before matching notes glide in.
 3. Call `list-notes` once with `{ scope: "outside-cluster", clusterId, limit: 250, offset: 0 }`.
 4. Pick the notes that clearly share the seeds' theme, wherever they are now. Precision over recall:
    skip anything ambiguous. At most 20.
