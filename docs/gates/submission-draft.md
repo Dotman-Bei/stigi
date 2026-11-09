@@ -33,7 +33,7 @@ What it does: product teams sit on hundreds of raw comments (tickets, NPS verbat
 
 How it uses Agent-Native: the board UI and the agent share one set of defineAction() actions (import-notes, list-notes, create-cluster, rename-cluster, move-notes, merge-clusters, delete-cluster, get-board-digest, save-report, view-screen) over one Postgres database. A drag in the UI calls move-notes; the agent calls the same move-notes as a tool, and the action refuses an agent move without a one-line reason. The user's selection is written to app-state and read by the agent's view-screen; the agent opens the report pane with a navigate command; the teach request is handed to the agent with sendToAgentChat-style hidden context (cluster id + seed notes). Agent tool calls refresh the board live (plus 2 s polling while the agent works, so it also works on serverless Vercel). Every agent turn is one small batch so it fits the hosted turn budget; sign-in is required and each account gets 40 agent turns per day.
 
-Live app: TBD-post-build:live-app-url (sign up with any email and password). The demo and the live app use SAMPLE DATA: 200 synthetic comments for a fictional expenses app, labeled as sample in the app.
+Live app: https://stigi.suitz.xyz (sign up with any email and password). The demo and the live app use SAMPLE DATA: 200 synthetic comments for a fictional expenses app, labeled as sample in the app.
 
 Pre-existing work and what changed: built on the Agent-Native "chat" template (@agent-native/core 0.226.0) and its @agent-native/toolkit components (app shell, agent sidebar); libraries @dnd-kit/core, motion, Drizzle, Zod, Vitest, Playwright. Everything Stigi-specific was built during the event on 2026-11-09: all board actions and their tests, the database schema, the board UI, the agent instructions and skills (teach-cluster, sort-feedback, write-report), the daily agent-turn cap, the public landing page at the site root, and the Vercel + Neon deployment setup.
 
@@ -58,7 +58,7 @@ Team: Dotman-Bei (solo builder), building with Claude Code as an AI pair.
 ## Facts the closing pass resolves
 
 - TBD-post-build:clips-demo-url
-- TBD-post-build:live-app-url
+- ~~TBD-post-build:live-app-url~~ resolved 2026-11-09: https://stigi.suitz.xyz (from `e2e/production-url.txt`; deploy:12 gate 3 passed there; final once deploy:52 passes)
 - TBD-post-build:public-repo-url
 
 Sources: the Clips URL comes from the builder's public Clips recording (no password, no expiry, not archived;
