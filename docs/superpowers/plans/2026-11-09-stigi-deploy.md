@@ -235,7 +235,7 @@ Verified 2026-11-09 against core 0.226.0 / Nitro `3.0.260903-beta`: with this co
       import path from "node:path";
 
       export const MIN_AGENT_CHAT_MAX_DURATION = 60;
-      export const KEY_PREFIX = "sk-or-";
+      export const KEY_PREFIX = "sk-or-v1-";
       export const SWEEP_PATH = "/_agent-native/jobs/_process-sweep";
 
       /** Every .vc-config.json under functionsDir (skipping node_modules) as { fn, maxDuration }. */

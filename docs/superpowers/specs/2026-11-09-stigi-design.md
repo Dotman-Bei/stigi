@@ -416,7 +416,7 @@ board area, left of the agent sidebar).
   Sort/More-like-these/Write-with-agent, and pauses auto-teach. **No global cap** (the OpenRouter key's
   credit limit is the backstop).
 - **Key server-side only.** No `VITE_`-prefixed secret anywhere; `scripts/check-vercel-output.mjs` fails
-  if any file under `.vercel/output/static` contains `sk-or-`.
+  if any file under `.vercel/output/static` contains `sk-or-v1-` (the OpenRouter key prefix).
 - **No open compute probe.** `/api/duration-probe` is 404 in production unless `STIGI_ENABLE_PROBE=1`,
   which exists only during the skeleton's probe check (D16).
 
