@@ -60,7 +60,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 | 0 | **done** | `docs/idea-forge/2026-11-08-sortboard-brief.md` (commit `3fd2910`, on origin/main) | guide read in full: all required fields present incl. Feasibility notes (transcribed from the pack); architect block carries DOCS + the frontend CONSTRAINTS line; repo rename verified | `claude-opus-5-5` · max (user-attested) |
 | 1 | **done** | spec `bd29099`, 5 plans + `manifest.json` + `docs/gates/submission-draft.md` + tollgate §3 Stack rows S1–S13, commit `d118813` | guide re-validated the manifest independently (45 tasks; DAG acyclic; 0 dangling deps; every task has a gate cmd; effort 32 medium / 7 low / 6 high; tier 33 standard / 11 top / 1 fast; 0 pin violations; 9 human-gated; no build task depends on any deploy task; board:33 + sort-report:36 gated but block only deploys + ship). Stack rows S1–S5, S9, S10 probed PASS 2026-11-09 09:36 WAT | `claude-opus-5-5` · xhigh (user-attested) |
 | 2 | pending | — | — | — |
-| 2.5 | skipped | — | — | — |
+| 2.5 | **RE-ENABLED 2026-11-09 ~21:20 WAT (user directive): run demo-studio in CLIPS MODE** | target: public Clips URL in the submission draft's clips-demo-url TBD | — | — |
 | 3 | pending | — | — | — |
 
 ## Calendar-fit call (re-run 2026-11-09 07:05 WAT, ~25.9h to deadline; first made 2026-11-08 21:30 WAT)
@@ -88,9 +88,12 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 - **Production domain (user request): https://stigi.suitz.xyz** attached to the Vercel project by the guide (`vercel domains add stigi.suitz.xyz stigi`; `suitz.xyz` is in the user's Vercel account on Vercel nameservers; wildcard ALIAS already existed; `nightcrew.suitz.xyz` is a different project, untouched). Verified: HTTP 200, TLS valid, signed-out probe 401, register + login + signed-in probe work on the new host; `stigi.vercel.app` still serves too. `e2e/production-url.txt` and the submission's live-app URL should use `https://stigi.suitz.xyz`.
 - Security note: the user pasted their OpenRouter key and the Neon connection string into chat and chose to keep them (their decision, 2026-11-09). Neither is stored in the repo.
 
+- **2026-11-09 ~21:20 WAT — Build complete; Step 2.5 re-enabled in Clips mode.** deploy:52 passed (9/9, commit bc459f5, build 0883bd8, production https://stigi.suitz.xyz, OpenRouter key usage $0.57 of $6). Guide verified from outside + re-scanned all 93 commits for secrets: clean. Findings: (1) `.env.example` still says Gemini active → orchestrator chore. (2) The design kit under docs/design/frontend-kit/ + docs/design/frontend.md is third-party (no license, ~413 library photos) → do NOT make the current repo public; if public, publish a clean no-history snapshot without the kit/.claude (user to choose; else leave GitHub URL empty). (3) Keys pasted in chat are NOT in the repo; rotation is optional hygiene, unrelated to repo visibility.
+- **User directive: the demo clip is the pipeline's job, not a human consent.** Guide advice recorded: demo-studio as shipped records with Playwright/ffmpeg, assembles with Remotion and uploads to YouTube — that does NOT satisfy the Rules ("Every entry requires a demo recorded with Clips. A recording made with another tool does not replace this requirement"). So Step 2.5 runs in CLIPS MODE: the session drives the real app on production while CLIPS records the screen (computer-use for the recorder/picker), sets the clip public, verifies it logged-out, QCs it via the clip's transcript/frames, and resolves TBD-post-build:clips-demo-url. Remotion, ffmpeg, narration and YouTube are struck. User waives the pre-publish watch; the clip is reversible and re-recordable (guide recommends the user still watches it afterwards). Risk: computer-use availability in that session (tollgate row 6); fallback = user records in Clips from the outline (~5 min).
+
 ## Next action
-- **User:** relay the probe-test fix and the domain to the orchestrator (chat). After deploy:12 passes, deploy:13 (probe off) is next.
-- **Guide:** verify deploy:12 closed, then watch M1 (deploy:50).
+- **User:** (1) tell the orchestrator the .env.example chore (chat); (2) open a fresh Step 2.5 session (sonnet/high) with computer-use + Chrome, paste the Clips-mode kickoff; keep hands off mouse/keyboard during its ~5 min recording window; (3) then Step 3 closing pass.
+- **Guide:** verify the clip URL (logged-out fetch, plays, shows the money shot) before Step 3.
 
 ## Open blockers
-- deploy:12 gate at 2/3 until the probe-test fix lands (test-only). Tripwire (15:20) not triggered.
+- Repo-public choice (snapshot vs private). Clips account user-attested. Computer-use availability for Step 2.5 (probe at session start).
