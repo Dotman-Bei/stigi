@@ -57,7 +57,7 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 |---|---|---|---|---|
 | 0a | **done** | `docs/resources/2026-11-08-agent-native-hackathon/` (commit `134ffb0`) + tollgate `1bd6ce8` | guide read all 7 files; deadline/rubric/prizes cross-agree with rules page + guide's own earlier fetch; gaps are labelled | `claude-opus-5-5` · high (user-attested) |
 | 0 | **done** | `docs/idea-forge/2026-11-08-sortboard-brief.md` (commit `3fd2910`, on origin/main) | guide read in full: all required fields present incl. Feasibility notes (transcribed from the pack); architect block carries DOCS + the frontend CONSTRAINTS line; repo rename verified | `claude-opus-5-5` · max (user-attested) |
-| 1 | pending | — | — | — |
+| 1 | **done** | spec `bd29099`, 5 plans + `manifest.json` + `docs/gates/submission-draft.md` + tollgate §3 Stack rows S1–S13, commit `d118813` | guide re-validated the manifest independently (45 tasks; DAG acyclic; 0 dangling deps; every task has a gate cmd; effort 32 medium / 7 low / 6 high; tier 33 standard / 11 top / 1 fast; 0 pin violations; 9 human-gated; no build task depends on any deploy task; board:33 + sort-report:36 gated but block only deploys + ship). Stack rows S1–S5, S9, S10 probed PASS 2026-11-09 09:36 WAT | `claude-opus-5-5` · xhigh (user-attested) |
 | 2 | pending | — | — | — |
 | 2.5 | skipped | — | — | — |
 | 3 | pending | — | — | — |
@@ -76,10 +76,12 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 
 - **2026-11-09 ~08:50 WAT — Spec reviewed** (`docs/superpowers/specs/2026-11-09-stigi-design.md`, commit `bd29099`): approved WITH three changes. (1) **Sample board loads pre-sorted** (spec §6 `import-notes` inserts all 200 unsorted, which contradicts D10 "money shot in <1 min": a full agent sort is 5 turns ≈ 2–3 min + ~$0.15, and the teach would pull from the Unsorted tray, not "across the board"). Sample ships a deliberately imperfect starting layout (~150 notes in ~6 clusters, `moved_by` NULL, billing/plan notes scattered across other clusters) + ~50 left unsorted so "Sort with agent" still has a visible job; labelled "Sample data · pre-sorted starting layout". (2) **`/api/duration-probe` is disabled in production** unless `STIGI_ENABLE_PROBE=1` (open sign-up + a route that sleeps up to 70s = compute abuse); enable only for the skeleton check, then unset. (3) **Timing-gate flake rule:** retry once; if Sonnet misses 35s twice, switch `AGENT_MODEL` to haiku via env — never rewrite the flow.
 
+- **2026-11-09 09:40 WAT — Step 1 verified; Step 2 cleared to boot.** Tollgate verdict for 2 changed to CLEAR TO BOOT with per-task prerequisites (accounts before deploy:10, key before board:33). Vercel CLI is installed by deploy:8 as a devDependency (`vercel@65.12.1`) — the guide's global-install offer is moot. Review mode: recommend **autonomous** (changed from the earlier `checkpoint` lean) because 45 tasks in ≤14h cannot wait on 45 human diff approvals; safety net = per-task gates, scope-check, the 9 human gates, and the user spot-checking the app at M1/M2/M3. Allow ≤2 worktree-isolated parallel subagents only for tasks with disjoint Files.
+
 ## Next action
-- **User, now:** send the architect the spec-review reply (in chat). Have Neon (C5) and Vercel (C6) accounts ready before plan #2 runs (~1h from now); Vercel CLI is NOT installed (`npm i -g vercel` — guide can do it on request; `vercel login` is the user's).
-- **Guide, when architect reports:** verify 5 plans + manifest (Stage-4 validation), submission draft, Stack requirements in the tollgate; check: deploy tasks `human_gate: true` and off every build task's dependency path; sample-board change landed in plan 3; probe-disable task; re-probe rows incl. C3/C5/C6; recommend `checkpoint`; prep Step 2 + concierge preflight kickoff.
+- **User:** fresh session at `opus` / effort `high` → paste the Step 2 orchestrator kickoff (chat). Optional parallel session: gate-concierge preflight (only if Neon/Vercel accounts are not done yet).
+- **User, before deploy:10 (~build hour 2–3):** Neon project + Vercel account ready. **Before board:33 (~task 30):** `OPENROUTER_API_KEY` in the app's git-ignored `.env`.
+- **Guide, while it builds:** verify at M1 (money shot works locally + on prod), M2, M3; unblock gates; track the build-hour-5 tripwire (deploy:12).
 
 ## Open blockers
-- Step 2 BLOCKED: C5 (Neon account) and C6 (Vercel account + CLI) — user actions. C3 user-attested (key + credit limit; not visible to the guide) — orchestrator boot re-probes by name.
-- C4 Clips account user-attested; Step 3 re-probes.
+- None for boot. Deferred-hard: C5/C6 accounts (before deploy:10), C3 key (before board:33) — user-attested, not visible to the guide. C4 Clips account user-attested; Step 3 re-probes.
