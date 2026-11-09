@@ -20,8 +20,8 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 
 ## Tollgate
 - Report: `docs/tollgate/2026-11-08-tollgate.md` (commit `1bd6ce8`, Step 0a Stage 0). Verified by the guide 2026-11-08 ~21:00 WAT against the committed file.
-- **Verdicts:** 0a CLEAR · 0 CLEAR · 1 CLEAR · **2 BLOCKED — row C1: Node v22.17.1 < required 22.22** (user fix: `winget upgrade OpenJS.NodeJS.LTS`, then `node --version`; open a NEW shell afterwards) · 2.5 skipped · 3 CLEAR (provisional; rows 5 and 7 passed in the 0a session only — Step 3 re-probes).
-- Campaign rows: C2 pnpm 10.33 PASS · **C3 LLM provider path — UNPROBED; hard for Step 2** (guide check: `ANTHROPIC_API_KEY` not set in this shell) · **C4 Clips account — user-attested 2026-11-08 ~21:10 WAT: account created in their Chrome (guide did not verify; Step 3 re-probes, must confirm the clip stays public)**.
+- **Verdicts:** 0a CLEAR · 0 CLEAR · 1 CLEAR · **2 BLOCKED — row C3 only (no `OPENROUTER_API_KEY` yet).** C1 PASS since 2026-11-09 07:05 WAT: guide upgraded Node v22.17.1 → **v22.23.4** on the user's request (official MSI, checksum + signature verified; `winget` is broken on this machine) · 2.5 skipped · 3 CLEAR (provisional; rows 5 and 7 passed in the 0a session only — Step 3 re-probes).
+- Campaign rows: C2 pnpm 10.33 PASS · **C3 LLM path DECIDED: OpenRouter (`OPENROUTER_API_KEY`) — key not yet present; hard for Step 2** · **C4 Clips account — user-attested 2026-11-08 ~21:10 WAT: account created in their Chrome (guide did not verify; Step 3 re-probes, must confirm the clip stays public)**.
 - Routing (row 18): per-spawn effort available; top=`claude-opus-5-5`, standard=`claude-sonnet-5-5`, fast=`claude-haiku-5-5` verified; no env overrides; executor variants not installed yet (orchestrator installs at Step 2 boot).
 - Note: row 7's probe opened a signed-in Gmail inbox in the user's Chrome (no mail read), as the matrix prescribes.
 
@@ -62,16 +62,19 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 | 2.5 | skipped | — | — | — |
 | 3 | pending | — | — | — |
 
-## Calendar-fit call (2026-11-08 ~21:30 WAT, ~35h to deadline)
+## Calendar-fit call (re-run 2026-11-09 07:05 WAT, ~25.9h to deadline; first made 2026-11-08 21:30 WAT)
 - **Sortboard FITS**, as a vertical slice. Longest pole is the board (DnD + live-sync animation); everything else is CRUD actions. Build budget ~14–16h of the ~35h leaves ~6h+ slack for fixes, the Clips take and submission. No idea-forge re-run needed.
 - Guard added to the architect kickoff: order plans so the money shot (drag two notes → agent names cluster → ~12 notes move) works end-to-end FIRST; report/export and polish after; stretch features flagged, never blocking.
 - Risks to watch: LLM path undecided (C3); pre-1.0 framework churn (pin version); hosted agent turn ~40–60s soft timeout (sorting must be batched — the pack says continuation is supported); frontend kit is a marketing-site skill applied to an app (kit subset committed at `docs/design/frontend-kit/`, commit `4f18b8c`).
 - Name: renamed to Stigi (see Project repo) — the Sortboard collision note is moot.
 
+- **Re-check 2026-11-09 07:05 WAT:** the architect has NOT started (no new commits after `84fd950`), so the overnight gap cost ~9h. Still fits, but no slack to waste: architect → ~09:30; build ~09:30–00:00 (≤14h); fixes + Clips take + submission 00:00–03:00 on Nov 10; **hard stop: submitted by Nov 10 03:00 WAT** (≈6h before 08:59 WAT). If the architect runs past ~10:00 WAT, cut stretch scope rather than shorten QA.
+
 ## Next action
-- **User:** (a) Node ≥22.22 upgrade (still BLOCKS Step 2 — do it during the architect dialogue); (b) open a fresh session at `opus` / effort `xhigh`, paste the Step 1 architect kickoff from chat; (c) have an answer ready for "which LLM path" (own Anthropic/OpenAI key in the git-ignored `.env`, or the Builder.io connection).
-- **Guide, when architect reports:** verify spec + plans + manifest (Stage-4 validation), submission draft, Stack requirements in the tollgate, model-tier pins; re-probe stack rows; recommend `checkpoint` review mode; prep Step 2 (+ concierge preflight only if the LLM key needs a gate).
+- **User, NOW:** open a fresh session at `opus` / effort `xhigh`, paste the Step 1 architect kickoff (given in chat — updated for OpenRouter + Node). Every hour of delay comes off the build budget.
+- **User, in parallel (≈5 min):** create an OpenRouter API key + add credits, and put it in a git-ignored `.env` / user-level env var named `OPENROUTER_API_KEY` — never in chat or the repo. Needed before Step 2, not before Step 1.
+- **Guide, when architect reports:** verify spec + plans + manifest (Stage-4 validation), submission draft, Stack requirements in the tollgate, model-tier pins; re-probe stack rows + C3 (name-presence only); recommend `checkpoint` review mode; prep Step 2.
 
 ## Open blockers
-- Step 2 BLOCKED on tollgate C1 (Node ≥22.22) — user action, ~5 min.
-- C3 (LLM path) unresolved — hard for Step 2; architect will ask. C4 Clips account user-attested; Step 3 re-probes.
+- Step 2 BLOCKED on tollgate C3 only: `OPENROUTER_API_KEY` must exist (user action). Architect must verify how the framework selects the OpenRouter engine/model and which OpenRouter model has reliable tool-calling (sorting depends on it).
+- C4 Clips account user-attested; Step 3 re-probes.
