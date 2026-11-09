@@ -1,0 +1,51 @@
+/* Stigi landing: page CSS. It only frames and crops the real screenshots and the one photograph,
+   sets the mirrored split of by-hand and the step rows. No UI is drawn here. */
+
+/* a real screenshot in its frame: one radius, a hairline, cropped by the frame, never upscaled */
+.shot { position: relative; overflow: hidden; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); }
+.shot > img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; max-width: none; object-fit: cover; object-position: 0 0; }
+
+/* how: the whole board across the .wrap, cropped by the frame's foot */
+.shot--wide { margin-top: var(--s-7); }
+.shot--wide > img { object-position: 0 0; }
+/* teach: the New cluster zone and the Untitled cluster, a square crop of the board */
+.shot--square { aspect-ratio: 1 / 1; }
+.shot--square > img { object-position: 46.6% 0; }
+/* steps: the selected notes and the selection bar, the board's right side */
+.shot--tall { aspect-ratio: 9 / 10; }
+.shot--tall > img { object-position: 67% 0; }
+
+/* steps: four numbered rows (kit .rows), the number inline before the title */
+.steps-rows { margin-top: var(--s-7); }
+.steps-rows .rows__name { display: flex; align-items: center; gap: var(--s-3); font-size: var(--t-lead); line-height: 1.4; }
+.steps-rows .rows__name .step-num { flex: none; }
+.steps-rows > li > p { padding-left: calc(32px + var(--s-3)); }
+
+/* actions: the diagram card across the .wrap under the heading row */
+.actions__panel { margin-top: var(--s-7); --p-h: 340px; }
+
+/* by-hand: the photograph on the left (the plan's one mirrored split); the words stay first in the source */
+.by-hand__photo { overflow: hidden; border-radius: var(--r-lg); aspect-ratio: 1 / 1; }
+.by-hand__photo > img { display: block; width: 100%; height: 100%; object-fit: cover; }
+@media (min-width: 1024px) {
+  .by-hand__photo { grid-column: 1 / span 6; grid-row: 1; }
+  .by-hand__text { grid-row: 1; }
+}
+
+/* faq: two columns of three answers, each closed by its rule */
+.faq > .faq__item:last-child { border-bottom: 0; }
+
+/* tablet and phone: the pictures stack under their words at a wider ratio */
+@media (max-width: 1023px) {
+  .shot--square, .shot--tall { aspect-ratio: 3 / 2; }
+  .shot--wide { aspect-ratio: 3 / 2; flex: none; }
+  .by-hand__photo { margin-top: var(--s-6); aspect-ratio: 3 / 2; }
+}
+/* stacked sections that run past one screen keep their words clear of the next section */
+@media (min-width: 640px) and (max-width: 1023px) { #steps { --h: 2; } }
+@media (max-width: 639px) { #steps, #faq { --hm: 2; } }
+@media (max-width: 639px) {
+  .shot--square, .shot--tall, .shot--wide { aspect-ratio: 1 / 1; }
+  .shot--tall > img { object-position: 67% 0; }
+  .steps-rows > li > p { padding-left: 0; }
+}
