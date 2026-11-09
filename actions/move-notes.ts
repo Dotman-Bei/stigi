@@ -9,10 +9,12 @@ import { requireOwner } from "../server/lib/owner.js";
 import { MAX_MOVES_PER_CALL, MAX_REASON_CHARS } from "../shared/board-types.js";
 
 const UNSORTED_KEY = "__unsorted__";
+/** The agent moves one batch per turn (sort ≤ 25, teach ≤ 20); the user's own limit stays MAX_MOVES_PER_CALL. */
+export const MAX_AGENT_MOVES_PER_CALL = 25;
 
 export default defineAction({
   description:
-    "Move notes between clusters (clusterId null = Unsorted). Batch up to 50 moves in ONE call. When you (the agent) move a note into a cluster, give a one-line reason (aim ≤ 80 characters) naming the shared trait.",
+    "Move notes between clusters (clusterId null = Unsorted). Batch the moves in ONE call: at most 25 when you (the agent) call it. When you (the agent) move a note into a cluster, give a one-line reason (aim ≤ 80 characters) naming the shared trait.",
   schema: z.object({
     moves: z.array(z.object({
       noteId: z.string().min(1).describe("The note to move."),
@@ -28,6 +30,11 @@ export default defineAction({
       fail("Each note can appear only once per call.", { errorCode: "invalid_input", statusCode: 400 });
     }
     if (actor === "agent") {
+      if (moves.length > MAX_AGENT_MOVES_PER_CALL) {
+        fail(`Move at most ${MAX_AGENT_MOVES_PER_CALL} notes per call (got ${moves.length}): file one batch, then stop. The app sends the next batch itself.`, {
+          errorCode: "too_many_moves", statusCode: 400,
+        });
+      }
       for (const move of moves) {
         if (move.clusterId !== null && !move.reason?.trim()) {
           fail(`Every agent move into a cluster needs a one-line reason (missing for note ${move.noteId}).`, {

@@ -52,6 +52,31 @@ describe("move-notes", () => {
     expect(back).toMatchObject({ clusterId: null, reason: null, movedBy: "user" });
   });
 
+  it("rejects more than 25 agent moves in one call with errorCode too_many_moves", async () => {
+    await importNotes.run({ csv: `comment\n${Array.from({ length: 26 }, (_, i) => `Note ${i}`).join("\n")}\n` }, user);
+    const target = await createCluster.run({ name: "Theme" }, user);
+    const ids = (await loadBoard(OWNER)).unsorted.map((n) => n.id);
+    expect(ids).toHaveLength(26);
+    const moves = ids.map((noteId) => ({ noteId, clusterId: target.id, reason: "Shares the theme" }));
+    await expect(moveNotes.run({ moves }, agent)).rejects.toMatchObject({
+      errorCode: "too_many_moves",
+      statusCode: 400,
+      message: expect.stringMatching(/at most 25/),
+    });
+    expect((await loadBoard(OWNER)).unsorted).toHaveLength(26);
+    const result = await moveNotes.run({ moves: moves.slice(0, 25) }, agent);
+    expect(result.moved).toBe(25);
+  });
+
+  it("keeps the 50-move limit for the user's own moves", async () => {
+    await importNotes.run({ csv: `comment\n${Array.from({ length: 50 }, (_, i) => `Note ${i}`).join("\n")}\n` }, user);
+    const target = await createCluster.run({ name: "Theme" }, user);
+    const ids = (await loadBoard(OWNER)).unsorted.map((n) => n.id);
+    const result = await moveNotes.run({ moves: ids.map((noteId) => ({ noteId, clusterId: target.id })) }, user);
+    expect(result.moved).toBe(50);
+    expect((await loadBoard(OWNER)).clusters[0]?.notes).toHaveLength(50);
+  });
+
   it("rejects duplicates and unknown notes or clusters", async () => {
     const { target, ids } = await setup();
     const noteId = ids[0] ?? "";
