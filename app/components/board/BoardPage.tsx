@@ -25,7 +25,8 @@ import type { BoardCluster, BoardNote, BoardSnapshot } from "@shared/board-types
 import { allNotes, diffAgentMoves } from "@/lib/board/agent-moves";
 import { findAutoTeachCluster } from "@/lib/board/auto-teach";
 import { UNSORTED_DROP_ID, clusterDropId, noteIdFromDragId, resolveDrop } from "@/lib/board/drop-target";
-import { buildTeachHandoff, type Handoff } from "@/lib/board/handoff";
+import { buildSortHandoff, buildTeachHandoff, type Handoff } from "@/lib/board/handoff";
+import { nextSortStep } from "@/lib/board/sort-loop";
 
 import { BoardTopBar } from "./BoardTopBar";
 import { ClusterColumn } from "./ClusterColumn";
@@ -77,6 +78,10 @@ export function BoardPage() {
   const firedRef = useRef<Set<string>>(new Set());
   const previousBoardRef = useRef<BoardSnapshot | null>(null);
   const timersRef = useRef<number[]>([]);
+  const [sorting, setSorting] = useState(false);
+  const lastSortUnsortedRef = useRef<number | null>(null);
+  const sortPendingRef = useRef(false);
+  const noProgressRecheckRef = useRef(false);
 
   const notesById = useMemo(() => {
     const map = new Map<string, BoardNote>();
@@ -146,6 +151,66 @@ export function BoardPage() {
     if (cluster) void teach(cluster);
   }, [board, autoTeach, isGenerating]);
 
+  // Spec §8: the UI drives one-batch agent turns until Unsorted is empty, a turn makes no progress,
+  // credits run out or the user stops it.
+  useEffect(() => {
+    if (isGenerating) sortPendingRef.current = false;
+    if (!board || sortPendingRef.current) return;
+    const step = nextSortStep({
+      active: sorting,
+      generating: isGenerating,
+      unsortedCount: board.unsorted.length,
+      remainingTurns: usage?.remaining ?? 1,
+      lastUnsortedCount: lastSortUnsortedRef.current,
+    });
+    if (step === "wait") return;
+    if (step === "stop-no-progress" && !noProgressRecheckRef.current) {
+      // The turn may have ended before this tab refetched: re-read the board once before giving up.
+      noProgressRecheckRef.current = true;
+      void boardQuery.refetch().then((result) => {
+        const fresh = result.data?.unsorted.length;
+        const last = lastSortUnsortedRef.current;
+        if (fresh !== undefined && last !== null && fresh < last) return; // new data re-runs this effect
+        noProgressRecheckRef.current = false;
+        setSorting(false);
+        lastSortUnsortedRef.current = null;
+        toast.error("The agent's last turn sorted nothing, so sorting stopped. Try again or sort by hand.");
+      });
+      return;
+    }
+    if (step === "send") {
+      noProgressRecheckRef.current = false;
+      sortPendingRef.current = true;
+      lastSortUnsortedRef.current = board.unsorted.length;
+      void (async () => {
+        if (await hasCredits()) {
+          handOff(buildSortHandoff());
+          return;
+        }
+        sortPendingRef.current = false;
+        setSorting(false);
+      })();
+      return;
+    }
+    setSorting(false);
+    lastSortUnsortedRef.current = null;
+    noProgressRecheckRef.current = false;
+    if (step === "stop-done") toast.success("Every note is sorted.");
+    if (step === "stop-credits" && usage) toast.error(dailyLimitMessage(usage.limit));
+  }, [board, sorting, isGenerating, usage]);
+
+  function toggleSorting(): void {
+    if (sorting) {
+      setSorting(false);
+      lastSortUnsortedRef.current = null;
+      return;
+    }
+    sortPendingRef.current = false;
+    noProgressRecheckRef.current = false;
+    lastSortUnsortedRef.current = null;
+    setSorting(true);
+  }
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(KeyboardSensor),
@@ -211,8 +276,8 @@ export function BoardPage() {
           agentRunning={isGenerating}
           autoTeach={autoTeach}
           onAutoTeachChange={changeAutoTeach}
-          sorting={false}
-          onSortToggle={null}
+          sorting={sorting}
+          onSortToggle={toggleSorting}
           onImportCsv={null}
           onOpenReport={null}
           onResetBoard={null}
