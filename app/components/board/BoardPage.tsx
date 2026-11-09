@@ -33,6 +33,7 @@ import { BoardTopBar } from "./BoardTopBar";
 import { ClusterColumn } from "./ClusterColumn";
 import { ClusterMenu } from "./ClusterMenu";
 import { EmptyBoard } from "./EmptyBoard";
+import { ImportCsvDialog } from "./ImportCsvDialog";
 import { NewClusterZone } from "./NewClusterZone";
 import { SelectionBar } from "./SelectionBar";
 
@@ -84,6 +85,7 @@ export function BoardPage() {
   const previousBoardRef = useRef<BoardSnapshot | null>(null);
   const timersRef = useRef<number[]>([]);
   const [sorting, setSorting] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const lastSortUnsortedRef = useRef<number | null>(null);
   const sortPendingRef = useRef(false);
   const noProgressRecheckRef = useRef(false);
@@ -275,6 +277,16 @@ export function BoardPage() {
     });
   }
 
+  async function importCsv(csv: string): Promise<boolean> {
+    try {
+      const result = await importNotes.mutateAsync({ csv });
+      toast.success(result.message);
+      return true;
+    } catch {
+      return false; // onError already showed the reason
+    }
+  }
+
   function changeAutoTeach(value: boolean): void {
     setAutoTeach(value);
     writeAutoTeach(value);
@@ -294,14 +306,14 @@ export function BoardPage() {
           onAutoTeachChange={changeAutoTeach}
           sorting={sorting}
           onSortToggle={toggleSorting}
-          onImportCsv={null}
+          onImportCsv={() => setImportOpen(true)}
           onOpenReport={() => navigate("/board/report")}
           onResetBoard={resetBoardNow}
         />
         {board === undefined ? (
           <p className="stigi-meta">Loading your board…</p>
         ) : board.totalNotes === 0 ? (
-          <EmptyBoard loading={importNotes.isPending} onLoadSample={loadSample} onImportCsv={null} />
+          <EmptyBoard loading={importNotes.isPending} onLoadSample={loadSample} onImportCsv={() => setImportOpen(true)} />
         ) : (
           <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveNote(null)}>
             <LayoutGroup>
@@ -359,6 +371,7 @@ export function BoardPage() {
             </DragOverlay>
           </DndContext>
         )}
+        <ImportCsvDialog open={importOpen} onClose={() => setImportOpen(false)} onImport={importCsv} />
         <SelectionBar
           count={selectedIds.size}
           canTeach={!agentBlocked}
