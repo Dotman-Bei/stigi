@@ -8,7 +8,8 @@ import {
   type DragEndEvent,
   type DragStartEvent,
 } from "@dnd-kit/core";
-import { useAgentChatGenerating } from "@agent-native/core/client/agent-chat";
+import { sendToAgentChatAndConfirm, useAgentChatGenerating } from "@agent-native/core/client/agent-chat";
+import { requestAgentSidebarOpen } from "@agent-native/core/client/agent-sidebar-state";
 import {
   actionErrorMessage,
   setClientAppState,
@@ -26,7 +27,9 @@ import type { BoardCluster, BoardNote, BoardSnapshot } from "@shared/board-types
 import { allNotes, diffAgentMoves } from "@/lib/board/agent-moves";
 import { findAutoTeachCluster } from "@/lib/board/auto-teach";
 import { UNSORTED_DROP_ID, clusterDropId, noteIdFromDragId, resolveDrop } from "@/lib/board/drop-target";
+import { readFiredClusterIds, writeFiredClusterIds } from "@/lib/board/fired-clusters";
 import { buildSortHandoff, buildTeachHandoff, type Handoff } from "@/lib/board/handoff";
+import { deliverWithRetry } from "@/lib/board/handoff-delivery";
 import { nextSortStep } from "@/lib/board/sort-loop";
 
 import { BoardTopBar } from "./BoardTopBar";
@@ -39,6 +42,11 @@ import { SelectionBar } from "./SelectionBar";
 
 export const AGENT_POLL_MS = 750;
 export const HIGHLIGHT_MS = 6_000;
+/** How long one handoff waits for the agent chat to confirm it received the submit. */
+export const HANDOFF_CONFIRM_MS = 10_000;
+/** After a confirmed handoff, how long the board shows "working" while it waits for the run to start. */
+export const HANDOFF_START_GRACE_MS = 20_000;
+export const HANDOFF_FAILED_MESSAGE = "Couldn't reach the agent chat. Open the agent panel and try again.";
 const AUTO_TEACH_STORAGE_KEY = "stigi.autoTeach";
 
 function readAutoTeach(): boolean {
@@ -62,10 +70,14 @@ function showError(error: unknown): void {
 }
 
 export function BoardPage() {
-  const [isGenerating, sendToAgent] = useAgentChatGenerating();
+  // isGenerating follows the chat's own running events. A handoff is "pending" from the moment it is sent
+  // until the chat's run starts, so the board never shows "working" for a message the chat never received.
+  const [isGenerating] = useAgentChatGenerating();
+  const [handoffPending, setHandoffPending] = useState(false);
+  const agentRunning = isGenerating || handoffPending;
   const navigate = useNavigate();
-  const boardQuery = useActionQuery("get-board", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS : false });
-  const usageQuery = useActionQuery("get-agent-usage", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS * 2 : false });
+  const boardQuery = useActionQuery("get-board", {}, { refetchInterval: agentRunning ? AGENT_POLL_MS : false });
+  const usageQuery = useActionQuery("get-agent-usage", {}, { refetchInterval: agentRunning ? AGENT_POLL_MS * 2 : false });
   const importNotes = useActionMutation("import-notes", { onError: showError });
   const createCluster = useActionMutation("create-cluster", { onError: showError });
   const renameCluster = useActionMutation("rename-cluster", { onError: showError });
@@ -95,11 +107,18 @@ export function BoardPage() {
     if (board) for (const n of allNotes(board)) map.set(n.id, n);
     return map;
   }, [board]);
-  const agentBlocked = isGenerating || (usage !== null && usage.remaining <= 0);
+  const agentBlocked = agentRunning || (usage !== null && usage.remaining <= 0);
 
   useEffect(() => {
     setAutoTeach(readAutoTeach());
+    // Clusters auto-teach already fired for stay fired across reloads (no second turn for an old cluster).
+    for (const id of readFiredClusterIds(window.localStorage)) firedRef.current.add(id);
   }, []);
+
+  // The chat's run started: the handoff is no longer just pending.
+  useEffect(() => {
+    if (isGenerating) setHandoffPending(false);
+  }, [isGenerating]);
 
   // Selection is app-state the agent reads through view-screen (ids only, spec §7).
   useEffect(() => {
@@ -141,22 +160,47 @@ export function BoardPage() {
     return true;
   }
 
-  function handOff(handoff: Handoff): void {
-    sendToAgent({ message: handoff.message, context: handoff.context, submit: true, openSidebar: true });
+  /**
+   * Hand a request to the agent chat and confirm it arrived. With the agent sidebar closed the chat mounts
+   * late; if the first submit is not confirmed in time, re-open the panel and send once more. Returns false
+   * (after an error toast) when the chat still did not receive it — never a silent "Agent working…" hang.
+   */
+  async function handOff(handoff: Handoff): Promise<boolean> {
+    setHandoffPending(true);
+    const result = await deliverWithRetry(
+      () => sendToAgentChatAndConfirm(
+        { message: handoff.message, context: handoff.context, submit: true, openSidebar: true, chatTarget: "local" },
+        { timeoutMs: HANDOFF_CONFIRM_MS },
+      ),
+      () => requestAgentSidebarOpen(),
+    );
+    if (!result.delivered) {
+      setHandoffPending(false);
+      toast.error(HANDOFF_FAILED_MESSAGE);
+      return false;
+    }
+    const timer = window.setTimeout(() => setHandoffPending(false), HANDOFF_START_GRACE_MS);
+    timersRef.current.push(timer);
+    return true;
+  }
+
+  function markFired(clusterId: string): void {
+    firedRef.current.add(clusterId);
+    writeFiredClusterIds(firedRef.current, window.localStorage);
   }
 
   async function teach(cluster: Pick<BoardCluster, "id" | "notes">): Promise<void> {
-    firedRef.current.add(cluster.id);
+    markFired(cluster.id);
     if (!(await hasCredits())) return;
-    handOff(buildTeachHandoff(cluster));
+    await handOff(buildTeachHandoff(cluster));
   }
 
   // Spec D7: auto-teach once a user-made untitled cluster has two seeds.
   useEffect(() => {
-    if (!board || !autoTeach || isGenerating) return;
+    if (!board || !autoTeach || agentRunning) return;
     const cluster = findAutoTeachCluster(board, firedRef.current);
     if (cluster) void teach(cluster);
-  }, [board, autoTeach, isGenerating]);
+  }, [board, autoTeach, agentRunning]);
 
   // Spec §8: the UI drives one-batch agent turns until Unsorted is empty, a turn makes no progress,
   // credits run out or the user stops it.
@@ -165,7 +209,7 @@ export function BoardPage() {
     if (!board || sortPendingRef.current) return;
     const step = nextSortStep({
       active: sorting,
-      generating: isGenerating,
+      generating: agentRunning,
       unsortedCount: board.unsorted.length,
       remainingTurns: usage?.remaining ?? 1,
       lastUnsortedCount: lastSortUnsortedRef.current,
@@ -190,11 +234,9 @@ export function BoardPage() {
       sortPendingRef.current = true;
       lastSortUnsortedRef.current = board.unsorted.length;
       void (async () => {
-        if (await hasCredits()) {
-          handOff(buildSortHandoff());
-          return;
-        }
+        if ((await hasCredits()) && (await handOff(buildSortHandoff()))) return;
         sortPendingRef.current = false;
+        lastSortUnsortedRef.current = null;
         setSorting(false);
       })();
       return;
@@ -204,7 +246,7 @@ export function BoardPage() {
     noProgressRecheckRef.current = false;
     if (step === "stop-done") toast.success("Every note is sorted.");
     if (step === "stop-credits" && usage) toast.error(dailyLimitMessage(usage.limit));
-  }, [board, sorting, isGenerating, usage]);
+  }, [board, sorting, isGenerating, agentRunning, usage]);
 
   function toggleSorting(): void {
     if (sorting) {
@@ -270,6 +312,7 @@ export function BoardPage() {
     resetBoard.mutate({}, {
       onSuccess: () => {
         firedRef.current = new Set();
+        writeFiredClusterIds(firedRef.current, window.localStorage);
         setSelectedIds(new Set());
         setSorting(false);
         toast.success("Board reset.");
@@ -294,14 +337,14 @@ export function BoardPage() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="stigi" data-agent-state={isGenerating ? "running" : "idle"}>
+      <div className="stigi" data-agent-state={agentRunning ? "running" : "idle"}>
         <BoardTopBar
           totalNotes={board?.totalNotes ?? 0}
           themeCount={board?.clusters.length ?? 0}
           unsortedCount={board?.unsorted.length ?? 0}
           sampleNotes={board?.sampleNotes ?? 0}
           usage={usage}
-          agentRunning={isGenerating}
+          agentRunning={agentRunning}
           autoTeach={autoTeach}
           onAutoTeachChange={changeAutoTeach}
           sorting={sorting}
