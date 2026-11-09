@@ -49,7 +49,8 @@ Team: Dotman-Bei (solo builder), building with Claude Code as an AI pair.
 | Agent-Native `chat` template, `@agent-native/core` 0.226.0, `@agent-native/toolkit` | The app scaffold, the app shell, the agent sidebar | MIT, BuilderIO/agent-native |
 | design-taste-frontend kit files (`system.css`, `system.js`, `ui/cards.css`, `ui/base.css`, `ui/ui.js`, the `window` and `chat` UI fragments, `motion/`, `layout/`, `diagrams/`, `moments/` with `iris-opens`) | Copied into `public/landing/assets/` for the landing page; the board uses the same tokens | The builder's own design skill (copied from their local skill folder) |
 | Photograph "Tabel day 1" by Jan Kahánek (kit library frame `d183`) | Landing page, section `by-hand` (a detail slot) | CC0, via Wikimedia Commons: https://commons.wikimedia.org/wiki/File:Tabel_day_1_(Unsplash).jpg. Credited in the landing footer |
-| Host Grotesk, JetBrains Mono | Board and landing typography | SIL Open Font License, via Google Fonts |
+| Host Grotesk, JetBrains Mono | Board and landing typography; Host Grotesk glyph outlines also form the "stigi" wordmark in the logo | SIL Open Font License 1.1, via Google Fonts (outlining is permitted by the OFL) |
+| Stigi logo (split-S mark, wordmark, lockups, favicon set, `docs/brand/logo/`) | Favicons, the board title mark, the landing nav and footer | Our own work, made during the event: original geometry (two elliptical arcs) plus Host Grotesk outlines; no other third-party art |
 | Tabler Icons | App shell and board menus (from the template) | MIT |
 | Lucide line icons (`ui-user`, `ui-layers`, `ui-database`, `ui-message-square`, `ui-refresh-cw`) | Landing page diagram, fetched by the kit's `icons.mjs` | ISC, Lucide Contributors |
 | Screenshots of Stigi's own board (sample data) | Landing page pictures | Captured from the running app by `e2e-landing/capture-screenshots.e2e.ts`: our own UI, no mock-ups |
