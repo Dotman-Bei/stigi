@@ -70,11 +70,14 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 
 - **Re-check 2026-11-09 07:05 WAT:** the architect has NOT started (no new commits after `84fd950`), so the overnight gap cost ~9h. Still fits, but no slack to waste: architect → ~09:30; build ~09:30–00:00 (≤14h); fixes + Clips take + submission 00:00–03:00 on Nov 10; **hard stop: submitted by Nov 10 03:00 WAT** (≈6h before 08:59 WAT). If the architect runs past ~10:00 WAT, cut stretch scope rather than shorten QA.
 
+## Decisions log (architect dialogue)
+- **2026-11-09 ~08:00 WAT — Deploy scope: option C (user's choice, against the guide's recommendation of A).** A live deploy is REQUIRED and on the critical path. Guide advice recorded: (1) deploy a walking skeleton FIRST (scaffold → deployed, Neon Postgres, Better Auth sign-in, migrate:production) so deploy risk surfaces at build hour ~3; (2) tripwire: if the skeleton isn't live by build hour ~5, the architect/orchestrator stops and asks the user whether to downgrade to B — no silent grinding; (3) public URL spends the user's OpenRouter credits → required sign-in + per-user daily agent-turn cap + a credit limit on the OpenRouter key; (4) the money shot must land on the deployed app under polling sync (serverless polls unless the Hosted Realtime Sync Gateway is used); (5) recommended stack: Netlify (the scaffold ships netlify.toml) + Neon Postgres, but the architect decides from the docs.
+- Other approved: pin `@agent-native/core@0.226.0` (verified: npm latest, published 2026-11-06 19:07 UTC); `AGENT_ENGINE=ai-sdk:openrouter`, `AGENT_MODEL=anthropic/claude-sonnet-5.5` (verified on OpenRouter's public list: tools + tool_choice, $2/$10 per M), `AGENT_ENGINE_PREFER_BYO_KEY=1`, fallback `anthropic/claude-haiku-5.5`; design olive-on-bone, Host Grotesk + JetBrains Mono.
+
 ## Next action
-- **User, NOW:** open a fresh session at `opus` / effort `xhigh`, paste the Step 1 architect kickoff (given in chat — updated for OpenRouter + Node). Every hour of delay comes off the build budget.
-- **User, in parallel (≈5 min):** create an OpenRouter API key + add credits, and put it in a git-ignored `.env` / user-level env var named `OPENROUTER_API_KEY` — never in chat or the repo. Needed before Step 2, not before Step 1.
-- **Guide, when architect reports:** verify spec + plans + manifest (Stage-4 validation), submission draft, Stack requirements in the tollgate, model-tier pins; re-probe stack rows + C3 (name-presence only); recommend `checkpoint` review mode; prep Step 2.
+- **User, now:** paste the reply to the architect (in chat). In parallel create the accounts C5/C6 below and the OpenRouter key.
+- **Guide, when architect reports:** verify spec + plans + manifest; check the deploy skeleton is plan #2 with `human_gate: true` on signup/secret/deploy tasks; check required-auth + turn-cap + key-on-server tasks exist; Stack requirements in the tollgate; re-probe rows incl. C3/C5/C6; recommend `checkpoint` review; prep Step 2 and a concierge **preflight** kickoff (hosted Postgres, host account, secrets).
 
 ## Open blockers
-- Step 2 BLOCKED on tollgate C3 only: `OPENROUTER_API_KEY` must exist (user action). Architect must verify how the framework selects the OpenRouter engine/model and which OpenRouter model has reliable tool-calling (sorting depends on it).
+- Step 2 BLOCKED: C3 (`OPENROUTER_API_KEY` not yet present), and now C5 (hosted Postgres account) and C6 (host account) — all user actions, ~15 min total.
 - C4 Clips account user-attested; Step 3 re-probes.
