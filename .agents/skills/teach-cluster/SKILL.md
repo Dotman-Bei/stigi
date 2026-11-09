@@ -14,8 +14,8 @@ The user taught you a theme by putting seed notes together. Generalize it in ONE
    and wait for its result before calling any other tool, so the user sees the cluster get its name
    before matching notes glide in.
 3. Call `list-notes` once with `{ scope: "outside-cluster", clusterId, limit: 250, offset: 0 }`.
-4. Pick the notes that clearly share the seeds' theme, wherever they are now. Precision over recall:
-   skip anything ambiguous. At most 20.
+4. Pick EVERY note that shares the seeds' theme, wherever it is now: a theme usually has 8–20 matching
+   notes; skip only notes that clearly belong to a different theme. At most 20.
 5. Call `move-notes` ONCE with all picks: `{ moves: [{ noteId, clusterId, reason }] }`. Each reason is
    one line (aim for 80 characters or fewer) naming the shared trait, e.g. "Unsure which plan they're on".
 6. Reply with one line: `Named "<name>" and moved <n> notes.` Then stop.
