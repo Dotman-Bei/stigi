@@ -1,0 +1,151 @@
+/* Stigi board — docs/design/frontend.md applied to an app: tokens only (stigi-tokens.css), one button
+   pair, one card style, the kit's hover lift / press, nothing moves on scroll, rest under reduced motion. */
+.stigi-route { display: flex; height: 100%; min-height: 0; background: var(--p-bg); }
+.stigi {
+  flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: var(--s-4);
+  padding: var(--s-5); background: var(--p-bg); color: var(--p-ink);
+  font-family: var(--font-text); font-size: var(--t-body); line-height: 1.45; overflow: auto;
+}
+.stigi h1, .stigi h2, .stigi-report h2 {
+  font-family: var(--font-display); font-weight: var(--display-weight);
+  letter-spacing: var(--display-tracking); margin: 0;
+}
+.stigi-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4); }
+.stigi-topbar__title { font-size: var(--t-h3); }
+.stigi-topbar__actions { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
+.stigi-chip {
+  display: inline-flex; align-items: center; height: 28px; padding: 0 var(--s-3);
+  border: 1px solid var(--p-ink); border-radius: 999px; font-family: var(--font-mono); font-size: var(--t-label);
+}
+.stigi-meta { color: var(--p-muted); font-size: var(--t-small); }
+.stigi-pill {
+  display: inline-flex; align-items: center; gap: var(--s-2); height: 28px; padding: 0 var(--s-3);
+  border-radius: 999px; background: var(--p-inv-bg); color: var(--p-inv-ink); font-size: var(--t-label);
+}
+.stigi-banner {
+  margin: 0; padding: var(--s-3) var(--s-4); border-radius: var(--r-md);
+  background: var(--p-inv-bg); color: var(--p-inv-ink); font-size: var(--t-small);
+}
+.stigi-btn {
+  height: var(--btn-h-sm); padding: 0 var(--s-4); border-radius: var(--r-btn);
+  font: 500 var(--t-small)/1 var(--font-text); cursor: pointer;
+  transition: background-color var(--dur) var(--ease), transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.stigi-btn--primary { background: var(--p-action); color: var(--p-action-ink); border: 1px solid var(--p-action); }
+.stigi-btn--primary:hover:not(:disabled) { background: var(--p-inv-surface); }
+.stigi-btn--secondary { background: var(--p-bg); color: var(--p-ink); border: 1px solid var(--p-ink); }
+.stigi-btn--secondary:hover:not(:disabled) { background: var(--p-surface); }
+.stigi-btn:active:not(:disabled) { transform: scale(.98); }
+.stigi-btn:disabled { opacity: .45; cursor: not-allowed; }
+.stigi-link {
+  background: none; border: 0; padding: 0; color: var(--p-ink); font: inherit;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.stigi-btn:focus-visible, .stigi-link:focus-visible, .stigi-note:focus-visible, .stigi-menu__item:focus-visible {
+  outline: 2px solid var(--p-accent); outline-offset: 2px;
+}
+.stigi-switch { display: inline-flex; align-items: center; gap: var(--s-2); font-size: var(--t-small); }
+.stigi-switch input { accent-color: var(--p-accent); width: 16px; height: 16px; }
+
+.stigi-board { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: var(--s-4); align-items: start; }
+.stigi-rail { position: sticky; top: 0; display: flex; flex-direction: column; gap: var(--s-4); }
+.stigi-clusters { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--s-4); align-items: start; }
+.stigi-column {
+  display: flex; flex-direction: column; min-width: 0; padding: var(--s-3);
+  background: var(--p-surface); border: 1px solid transparent; border-radius: var(--r-lg);
+  transition: border-color var(--dur) var(--ease);
+}
+.stigi-column[data-over="true"] { border-color: var(--p-accent); }
+.stigi-column__header { position: relative; display: flex; align-items: center; gap: var(--s-2); padding: var(--s-1) var(--s-1) var(--s-3); }
+.stigi-column__title { flex: 1 1 auto; font-size: var(--t-card); }
+.stigi-column__title--untitled { font-style: italic; color: var(--p-muted); font-size: var(--t-small); }
+.stigi-column__count { font-family: var(--font-mono); font-size: var(--t-label); color: var(--p-muted); }
+.stigi-column__notes { display: flex; flex-direction: column; gap: var(--s-2); max-height: 480px; overflow-y: auto; padding: 2px; }
+
+.stigi-note {
+  padding: var(--s-3); background: var(--p-bg); border-radius: var(--r-md);
+  box-shadow: 0 1px 0 rgba(56, 69, 15, .12); cursor: grab; touch-action: none;
+  transition: transform var(--dur) var(--ease), box-shadow var(--dur) var(--ease), opacity var(--dur) var(--ease);
+}
+.stigi-note:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(56, 69, 15, .14); }
+.stigi-note[data-selected="true"] { box-shadow: 0 0 0 2px var(--p-accent); }
+.stigi-note[data-highlighted="true"] { box-shadow: 0 0 0 2px var(--p-accent), 0 0 0 6px rgba(56, 69, 15, .18); }
+.stigi-note[data-dragging="true"] { opacity: .35; }
+.stigi-note--overlay { cursor: grabbing; box-shadow: 0 12px 28px rgba(56, 69, 15, .25); }
+.stigi-note__body {
+  margin: 0; font-size: var(--t-small);
+  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+}
+.stigi-note__reason {
+  margin: var(--s-2) 0 0; padding: var(--s-1) var(--s-2); border: 1px solid var(--p-accent);
+  border-radius: var(--r-sm); font-family: var(--font-mono); font-size: var(--t-label); line-height: 1.35;
+}
+.stigi-note__reason span { font-weight: 500; }
+
+.stigi-newzone {
+  padding: var(--s-4); border: 2px dashed var(--p-muted); border-radius: var(--r-lg);
+  transition: border-color var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.stigi-newzone[data-over="true"] { border-color: var(--p-accent); background: var(--p-surface); }
+.stigi-newzone__title { margin: 0 0 var(--s-1); font-weight: 500; }
+.stigi-newzone__hint { margin: 0; color: var(--p-muted); font-size: var(--t-small); }
+
+.stigi-empty { max-width: 560px; margin: 12vh auto 0; display: flex; flex-direction: column; align-items: flex-start; gap: var(--s-4); }
+.stigi-empty__title { font-size: var(--t-h3); }
+.stigi-empty__line { margin: 0; color: var(--p-muted); }
+
+.stigi-selection {
+  position: sticky; bottom: 0; align-self: center; display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-2) var(--s-4); border-radius: 999px; background: var(--p-inv-bg); color: var(--p-inv-ink);
+}
+.stigi-selection .stigi-btn--secondary { background: var(--p-inv-surface); color: var(--p-inv-ink); border-color: var(--p-inv-ink); }
+
+.stigi-menu { position: relative; }
+.stigi-menu__toggle { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 0; border-radius: var(--r-sm); color: var(--p-ink); cursor: pointer; }
+.stigi-menu__toggle:hover { background: var(--p-bg); }
+.stigi-menu__panel {
+  position: absolute; right: 0; top: 100%; z-index: 20; display: flex; flex-direction: column; min-width: 200px;
+  padding: var(--s-1); background: var(--p-bg); border: 1px solid var(--p-ink); border-radius: var(--r-md);
+}
+.stigi-menu__item {
+  padding: var(--s-2) var(--s-3); background: none; border: 0; border-radius: var(--r-sm);
+  color: var(--p-ink); font: inherit; font-size: var(--t-small); text-align: left; cursor: pointer;
+}
+.stigi-menu__item:hover:not(:disabled) { background: var(--p-surface); }
+.stigi-menu__item:disabled { opacity: .45; cursor: not-allowed; }
+.stigi-rename { display: flex; gap: var(--s-2); flex: 1 1 auto; }
+.stigi-rename input {
+  flex: 1 1 auto; min-width: 0; height: var(--btn-h-sm); padding: 0 var(--s-2);
+  border: 1px solid var(--p-ink); border-radius: var(--r-sm); background: var(--p-bg); color: var(--p-ink); font: inherit;
+}
+
+.stigi-report {
+  flex: 0 0 420px; width: 420px; display: flex; flex-direction: column; gap: var(--s-3);
+  padding: var(--s-5); background: var(--p-bg); color: var(--p-ink); border-left: 1px solid var(--p-surface);
+  font-family: var(--font-text);
+}
+.stigi-report__header { display: flex; align-items: center; justify-content: space-between; gap: var(--s-2); }
+.stigi-report__notice { margin: 0; padding: var(--s-2) var(--s-3); border-radius: var(--r-md); background: var(--p-surface); font-size: var(--t-small); }
+.stigi-report__editor {
+  flex: 1 1 auto; min-height: 320px; resize: vertical; padding: var(--s-3);
+  border: 1px solid var(--p-muted); border-radius: var(--r-md); background: var(--p-bg); color: var(--p-ink);
+  font-family: var(--font-mono); font-size: var(--t-small); line-height: 1.5;
+}
+.stigi-report__actions { display: flex; flex-wrap: wrap; gap: var(--s-2); }
+
+.stigi-dialog-backdrop { position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; background: rgba(56, 69, 15, .35); }
+.stigi-dialog {
+  width: min(560px, calc(100vw - 32px)); display: flex; flex-direction: column; gap: var(--s-3); padding: var(--s-5);
+  background: var(--p-bg); color: var(--p-ink); border-radius: var(--r-lg); font-family: var(--font-text);
+}
+.stigi-dialog textarea {
+  min-height: 160px; padding: var(--s-3); border: 1px solid var(--p-muted); border-radius: var(--r-md);
+  background: var(--p-bg); color: var(--p-ink); font-family: var(--font-mono); font-size: var(--t-small);
+}
+
+.stigi-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stigi-route *, .stigi-route *::before, .stigi-route *::after { transition: none !important; animation: none !important; }
+  .stigi-note:hover { transform: none; }
+}

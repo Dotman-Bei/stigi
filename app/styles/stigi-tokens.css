@@ -1,0 +1,20 @@
+/* Stigi tokens — values printed by docs/design/frontend-kit/scripts/start.mjs
+   (deal 2026-11-09: palette olive-on-bone, type host, radius soft). Scoped to the board route so the
+   template shell keeps its own styles. Spacing, type and radius scales from the kit's system.css. */
+.stigi-route,
+.stigi {
+  --p-bg: #ecebe7; --p-surface: #e1dfd9; --p-ink: #38450f; --p-muted: #5a6537;
+  --p-accent: #38450f; --p-accent-ink: #ecebe7; --p-action: #38450f; --p-action-ink: #ecebe7;
+  --p-inv-bg: #38450f; --p-inv-surface: #435020; --p-inv-ink: #ecebe7; --p-inv-muted: #bbbfaf;
+  --font-display: "Host Grotesk", system-ui, sans-serif;
+  --font-text: "Host Grotesk", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --display-weight: 500;
+  --display-tracking: -0.035em;
+  --t-label: 13px; --t-small: 14px; --t-body: 16px; --t-card: 18px; --t-h3: 24px;
+  --s-1: 4px; --s-2: 8px; --s-3: 12px; --s-4: 16px; --s-5: 24px; --s-6: 32px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 20px; --r-btn: 8px;
+  --btn-h: 44px; --btn-h-sm: 36px;
+  --ease: cubic-bezier(.2, .7, .2, 1);
+  --dur: 180ms;
+}
