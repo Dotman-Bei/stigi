@@ -19,7 +19,7 @@
 - Modify: `README.md`
 - Create: `LICENSE`
 
-**Depends on:** Task 36, Task 42
+**Depends on:** Task 36, Task 42, Task 62
 **Effort:** medium
 **Provides:** `README.md (R1-web-app v1, TBD-post-build lines for demo video, live URL, screenshot)`, `LICENSE (MIT)`
 **Requires:** `e2e/sort-batch.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)`, `e2e/report-export.spec.ts`
@@ -178,7 +178,7 @@ Schema `R1-web-app v1` (UI is the product; the agent is reached through the UI).
 **Files:**
 - (none — verification only)
 
-**Depends on:** Task 7, Task 8, Task 33, Task 36, Task 38, Task 41, Task 42, Task 43
+**Depends on:** Task 7, Task 8, Task 33, Task 36, Task 38, Task 41, Task 42, Task 43, Task 62
 **Effort:** low
 **Provides:** `final local verification: vitest + typecheck + build green`
 **Requires:** `README.md (R1-web-app v1, TBD-post-build lines for demo video, live URL, screenshot)`, `node scripts/check-vercel-output.mjs -> VERCEL_OUTPUT_OK`

@@ -79,11 +79,15 @@ on-chain; the Clips recording; the repo-public flip (Step-3 consent gate).
 | D9 | Function duration | `nitro.config.ts` sets `vercel.functions.maxDuration: 60` and explicit `functionRules` for the agent-chat routes (verified: Vercel output carries `"maxDuration": 60` on `_agent-native/agent-chat*.func`); the skeleton probes the deployed URL for the real limit | user, addition 2 |
 | D10 | First-run | Empty board shows one obvious action "Load sample data (200 notes)" + one-line explanation, labeled sample; fresh sign-up reaches the money shot in < 1 minute without a CSV | user, addition 3 |
 | D11 | Cap message | Friendly, explicit ("demo credits for today are used"); UI never fails silently; **no global cap** | user, addition 4 |
-| D12 | Cut order if behind | stretch → merge/delete polish → CSV edge cases. Never cut: money shot, deploy skeleton, report, tests | user |
+| D12 | Cut order if behind | stretch → landing moments/scenes → merge/delete polish → CSV edge cases. Never cut: money shot, deploy skeleton, report, tests, or the landing hero + CTA once built (amended 2026-11-09 with the landing scope addition) | user |
 | D13 | Live-sync mechanism | No Hosted Realtime Sync Gateway; same-tab chat-run tool-completion invalidation + explicit 2 s polling of `get-board` while the agent runs | architect, approved (E) |
 | D14 | Live-key gates | Playwright e2e (framework `agent-native eval` CLI requires a production adapter with a read-only action surface, so it cannot exercise writes) | architect, approved (I) |
 | D15 | Sample layout | **Sample board loads pre-sorted**: 150 notes in 6 deliberately imperfect starting clusters (`created_by = 'sample'`, notes `moved_by NULL`, no reason) + 50 unsorted; 14 plan/billing notes scattered across the wrong clusters and Unsorted (plus the 2 seeds), so the teach pulls from across the board with no prior agent sort; chip "Sample data · pre-sorted starting layout"; every sample artifact stays labeled sample | user, spec review change 1 |
 | D16 | Probe exposure | `/api/duration-probe` returns 404 in production unless `STIGI_ENABLE_PROBE=1`; the skeleton sets the flag for the probe check, then removes it and redeploys; `check-vercel-env.mjs` asserts it is absent afterwards | user, spec review change 2 |
+| D18 | Landing page (scope addition, mid-build) | An **additive sixth plan** (`landing:60–64`): a public marketing page at `/` built with the full design-skill workflow, `/board` still behind sign-in. The 45 existing tasks keep their id, files, gate and provides; only `ship:43`, `ship:44` (+`landing:62`) and `deploy:52` (+`landing:64`) gain a `depends_on`. Entry deps `foundation:3`, `board:26`, `deploy:9` (Playwright, done in build hour 1); `landing:61` also depends on `board:31` (real screenshots). `landing:63` (the moment) is optional: nothing depends on it. `landing:64` (deps `deploy:13`, `landing:62`) is the plan's only human gate and blocks only `deploy:52` | user, scope addition 2026-11-09 |
+| D21 | Landing pictures | Real screenshots of the running board (sample data loaded, "Sample data" chip visible) captured by `e2e-landing/capture-screenshots.e2e.ts` with auto-teach off (no key); no mock-ups, no drawn stand-ins, no kit UI fragments; gate: the screenshots exist and the content test finds no testimonials, logos, statistics or people | user, landing review 2026-11-09 |
+| D19 | Landing honesty | Product-UI-led: real screenshots of the running app (D21), one library detail photograph with its credit; no testimonials, customer logos, invented statistics or photographs of people; every number on the page a true product fact | user |
+| D20 | Landing deal | Run with the kit's scripts: kind software; hero `split`; nav `nav-centre`; footer `footer-statement`; close `close-type`; rhythm `dark-band`; buttons `pill`; mark `ring`; lit ground `sky`; no CSS ground; no shader effect; moment `iris-opens` (one); photograph `d183` (CC0). Palette/type/radius = the board's deal (§10) | architect via `deal.mjs`, `start.mjs`, `moments.mjs`, `photos.mjs` |
 | D17 | Timing-gate flake rule | A timing gate retries once; if the model misses 35 s twice, the documented action is `AGENT_MODEL=anthropic/claude-haiku-5.5` via env (local `.env` and Vercel), never a flow rewrite | user, spec review change 3 |
 
 ## 4. Architecture
@@ -498,10 +502,11 @@ Five plans, one per subsystem, ordered as a vertical slice. All in `docs/superpo
 4. `2026-11-09-stigi-sort-report.md` — sort loop + skill + live timing e2e, merge/delete UI, report
    actions/pane/export + skill + e2e, CSV import dialog.
 5. `2026-11-09-stigi-ship.md` — README (schema `R1-web-app v1`), final typecheck/build gate.
+6. `2026-11-09-stigi-landing.md` — the public landing page at `/` (§18), added mid-build as new tasks 60–64.
 
-**Cut order if behind (D12):** stretch (undo last agent batch, multi-select drag, CSV column picker — no
-task on the critical path) → merge/delete polish → CSV edge cases. Never cut: money shot, deploy skeleton,
-report, tests.
+**Cut order if behind (D12, amended):** stretch (undo last agent batch, multi-select drag, CSV column picker — no
+task on the critical path) → landing moments/scenes (`landing:63`) → merge/delete polish → CSV edge cases.
+Never cut: money shot, deploy skeleton, report, tests, or the landing hero + CTA once built.
 
 ## 16. Submission facts (pre-filled in `docs/gates/submission-draft.md`)
 
@@ -521,3 +526,63 @@ Project name **Stigi**; one-liner from §1; pre-existing work: the Agent-Native 
 | Better Auth endpoint/CSRF details | e2e auth helper sends `Origin`; validated locally before the deploy gate |
 | Framework churn | exact pin `0.226.0`; scaffold verified 2026-11-09 |
 | dnd-kit + motion layout conflicts | `DragOverlay` for the lifted card; the source card fades during drag; layout animation only on refetch |
+
+## 18. Landing page at `/` (D18–D20; plan `2026-11-09-stigi-landing.md`, tasks 60–64)
+
+**Surfaces.** One design system, two surfaces (`docs/design/frontend-kit/README.md`): the board app
+(`/board`: tokens, type, radius and motion only, §10) and the landing page (`/`: the full skill workflow).
+
+**Serving.** The landing is a skill-native static page, `public/landing/index.html`, with copies of the kit
+assets it uses under `public/landing/assets/`, all referenced root-relative (`/landing/assets/…`).
+`scripts/build-landing.mjs` compiles the HTML into `server/landing/landing-html.ts` (`--check` fails when
+stale). The scaffold's Nitro route `server/routes/index.get.ts` returns that string for `/`, outside React
+Router, so the page carries no app shell. On Vercel, `/` is the `index.func` function and `/landing/*` are
+static files.
+
+**Auth (top tier, `landing:60`).** `server/plugins/auth.ts` sets `rootAuth: false`, so the guard no longer
+answers `/` with the sign-in page, and `publicPaths: ["/", "/landing"]`. The guard's `matchesPathList`
+treats `"/"` as exact, so only `/` and `/landing/*` become public. `/board` and every other page keep the
+sign-in wall: an anonymous SSR shell plus the client gate, unchanged.
+
+**Verified in a throwaway 0.226.0 scaffold on 2026-11-09:**
+- a signed-out `GET /` returns 200 `text/html` from the route;
+- `/landing/*` (`.css`, `.js`, `.json`, `.webp`, `.html`) returns 200 signed-out.
+
+**Tests.** `e2e-landing/landing-public.e2e.ts` runs with its own `playwright.landing.config.ts` (testDir
+`e2e-landing`, `*.e2e.ts`, so Vitest's default include and the default Playwright config never pick it
+up). It asserts a signed-out `GET /` is 200 with the landing h1, and that a signed-out `/board` shows the
+sign-in screen. `scripts/lib/landing-content.test.mjs` (Vitest) checks:
+- the declared kind and the deal;
+- the h1;
+- exactly three `Try Stigi` → `/board` anchors (nav, hero, close);
+- the section order;
+- the honesty rules (D19);
+- the photograph and font credits;
+- the synthetic-sample disclosure.
+
+**Skill checkers (`landing:62`).** `scripts/check-landing.mjs` starts the dev server
+(`scripts/with-dev-server.mjs`) and runs `docs/design/frontend-kit/scripts/consistency.mjs` and
+`docs/design/frontend-kit/assets/layout/check.mjs` against `http://localhost:8091/` (the landing's own dev server, with its own PGlite folder `data/pglite-landing`,
+so it never collides with the main e2e suites on :8080 running in parallel) at the skill's widths and sizes. Every FAIL is fixed in the page, never in kit files. The checkers drive system Chrome.
+
+**Page.** Kind software, the deal in D20. Sections:
+
+| id | content |
+|---|---|
+| `top` | hero split: h1 "The feedback board for product teams", the board screenshot and a float card |
+| `how` | app-frame: a wide screenshot of the whole board |
+| `teach` | split-text-left: screenshot of two seeds in a new cluster |
+| `steps` | four steps: screenshot of the selection bar |
+| `actions` | dark band: lanes diagram, optional `iris-opens` moment (`landing:63`) |
+| `by-hand` | detail photograph `d183` |
+| `faq` | the calm section |
+| (footer) | close-type plus footer-statement, with the one credits line |
+
+The main action, word for word in nav, hero and close, is **Try Stigi** → `/board`. Signed-out visitors
+sign in there and land on their board. The sample disclosure is one FAQ line, "200 synthetic sample
+comments for a fictional expenses app"; it passes the checker's `sample-label` rule and satisfies the
+Rules. All copy is fixed verbatim in the plan.
+
+**Production.** `landing:64` (human-gated deploy) redeploys and runs the landing e2e against the deployed
+URL. `deploy:52` (M3) depends on it. The default deployed suite and its "8 passed" expectation are
+unchanged.

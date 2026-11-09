@@ -641,6 +641,7 @@ Verified 2026-11-09 against core 0.226.0 / Nitro `3.0.260903-beta`: with this co
 
 - [ ] **Step 5: Run the skeleton spec against the local dev server (the gate)**
       Stop any dev server already listening on port 8080 first (the spec needs the normal sign-in page, which Playwright's server enables with `AGENT_NATIVE_DISABLE_AUTO_DEV_ACCOUNT=1`).
+      Known fix (seen in a throwaway 0.226.0 install on this machine, 2026-11-09): if the dev server fails to start with `Could not resolve './hoc'` (or `./hook`, `./config`, `./renderProp`, `./createRef`) in `use-sidecar` / `use-callback-ref`, the install is missing files: run `pnpm install --force` and retry the gate once.
       Run: `pnpm exec playwright test e2e/deploy-skeleton.spec.ts --project=local`
       Expected: PASS — `3 passed` (about 2–3 minutes including dev-server start and the 45 s + 58 s probes)
 
@@ -857,7 +858,7 @@ Human-gated (`gate_profile: deploy`). Nothing depends on this task.
 **Files:**
 - (none — redeploy only)
 
-**Depends on:** Task 13, Task 44
+**Depends on:** Task 13, Task 44, Task 64
 **Effort:** medium
 **Model tier:** top
 **Provides:** `M3 deployed: full production suite green (submission unblocked)`

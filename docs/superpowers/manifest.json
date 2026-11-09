@@ -6,7 +6,8 @@
     "deploy",
     "board",
     "sort-report",
-    "ship"
+    "ship",
+    "landing"
   ],
   "notes": [
     "Task numbers are global across the five plans; ids are <subsystem>:<N>.",
@@ -14,7 +15,11 @@
     "TRIPWIRE: if deploy:12 is not done by build hour ~5, stop and ask the user whether to downgrade to a local-only demo (also stop if the 45 s duration probe fails).",
     "Timing flake rule: board:33, sort-report:36, deploy:50, deploy:51 retry once; two misses of 35 s -> AGENT_MODEL=anthropic/claude-haiku-5.5 via env, never a flow rewrite.",
     "board:33 and sort-report:36 run the live agent with the user's OPENROUTER_API_KEY from .env (key operation) -> human_gate.",
-    "Cut order if behind: stretch -> merge/delete polish (sort-report:37-38) -> CSV edge cases (sort-report:41). Never cut the money shot, the deploy skeleton, the report or the tests."
+    "Cut order if behind (amended 2026-11-09): stretch -> landing moments/scenes (landing:63) -> merge/delete polish (sort-report:37-38) -> CSV edge cases (sort-report:41). Never cut the money shot, the deploy skeleton, the report, the tests, or the landing hero + CTA once built. landing:63 (the moment) is optional: it depends on landing:62 and nothing depends on it, so cutting it means not dispatching it.",
+    "Landing plan (added mid-build 2026-11-09, additive): landing:60-64 are new ids; existing tasks changed only by appending landing:62 to ship:43 and ship:44 depends_on and landing:64 to deploy:52 depends_on (plus a known-fix hint line in deploy:9 Step 5; its id, files, gate and provides are unchanged). Landing entry deps: foundation:3, board:26, deploy:9 (Playwright, done in hour 1); landing:61 also depends on board:31 because it captures real screenshots of the running board (sample data loaded, Sample data chip visible; no mock-ups); runs in parallel with sort-report; files disjoint from every other pending task (it modifies only the scaffold files server/plugins/auth.ts and server/routes/index.get.ts, which no other task touches).",
+    "landing:60 changes the auth-guard allowlist (rootAuth false; publicPaths exactly / and /landing) -> top tier. landing:64 (depends on deploy:13 and landing:62) is the plan's only human gate: a redeploy that verifies the landing on production; only deploy:52 (M3) depends on it.",
+    "Known fix for deploy:9 / landing:60 / landing:61: if the dev server fails with Could not resolve ./hoc (use-sidecar / use-callback-ref), run pnpm install --force and retry the gate once.",
+    "Landing e2e specs are e2e-landing/*.e2e.ts run with playwright.landing.config.ts, so deploy:52 still expects 8 passed from the default config."
   ],
   "tasks": [
     {
@@ -646,7 +651,8 @@
       "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
       "depends_on": [
         "deploy:13",
-        "ship:44"
+        "ship:44",
+        "landing:64"
       ],
       "effort": "medium",
       "model_tier": "top",
@@ -1875,7 +1881,8 @@
       "plan": "docs/superpowers/plans/2026-11-09-stigi-ship.md",
       "depends_on": [
         "sort-report:36",
-        "sort-report:42"
+        "sort-report:42",
+        "landing:62"
       ],
       "effort": "medium",
       "files": {
@@ -1917,7 +1924,8 @@
         "sort-report:38",
         "sort-report:41",
         "sort-report:42",
-        "ship:43"
+        "ship:43",
+        "landing:62"
       ],
       "effort": "low",
       "files": {
@@ -1938,6 +1946,237 @@
       },
       "commit": "chore: final local verification green (no file changes)",
       "human_gate": false,
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "landing:60",
+      "subsystem": "landing",
+      "title": "Public landing route at `/` with `/board` still behind sign-in",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-landing.md",
+      "depends_on": [
+        "foundation:3",
+        "deploy:9",
+        "board:26"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "server/landing/landing-html.ts",
+          "scripts/lib/landing-html.mjs",
+          "scripts/build-landing.mjs",
+          "scripts/with-dev-server.mjs",
+          "public/landing/index.html",
+          "playwright.landing.config.ts",
+          "e2e-landing/landing-public.e2e.ts"
+        ],
+        "modify": [
+          "server/plugins/auth.ts",
+          "server/routes/index.get.ts"
+        ],
+        "test": [
+          "scripts/lib/landing-html.test.mjs"
+        ]
+      },
+      "provides": [
+        "GET / serves public/landing/index.html publicly (auth allowlist: exactly \"/\" and \"/landing/*\"; /board stays behind sign-in)",
+        "node scripts/build-landing.mjs [--check] -> LANDING_MODULE_OK",
+        "node scripts/with-dev-server.mjs \"<command>\"... (runs commands against a dev server on :8091)",
+        "playwright.landing.config.ts (testDir e2e-landing, *.e2e.ts, projects local :8091 / deployed)",
+        "e2e-landing/landing-public.e2e.ts (2 tests)"
+      ],
+      "requires": [
+        "/board route shell with h1 \"Feedback board\"",
+        "playwright projects \"local\" (dev server :8080) and \"deployed\" (STIGI_E2E_TARGET=deployed, e2e/production-url.txt)",
+        "app/styles/stigi-tokens.css (olive-on-bone, Host Grotesk + JetBrains Mono, scoped .stigi-route/.stigi)"
+      ],
+      "gate": {
+        "run": "pnpm vitest run scripts/lib/landing-html.test.mjs && node scripts/build-landing.mjs --check && pnpm typecheck && pnpm exec playwright test --config playwright.landing.config.ts e2e-landing/landing-public.e2e.ts --project=local",
+        "expect": "PASS — `Tests  2 passed (2)`, `LANDING_MODULE_OK`, then `2 passed`"
+      },
+      "commit": "feat: serve a public landing page at / and keep /board behind sign-in",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "landing:61",
+      "subsystem": "landing",
+      "title": "Real board screenshots and the landing page built with the design skill",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-landing.md",
+      "depends_on": [
+        "board:31",
+        "landing:60"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "public/landing/landing.css",
+          "e2e-landing/capture-screenshots.e2e.ts",
+          "public/landing/assets/shots/board-hero.jpg",
+          "public/landing/assets/shots/board-overview.jpg",
+          "public/landing/assets/shots/board-teach.jpg",
+          "public/landing/assets/shots/board-selection.jpg",
+          "public/landing/assets/system.css",
+          "public/landing/assets/system.js",
+          "public/landing/assets/ui/cards.css",
+          "public/landing/assets/ui/ui.js",
+          "public/landing/assets/motion/motion.css",
+          "public/landing/assets/motion/motion.js",
+          "public/landing/assets/layout/layout.css",
+          "public/landing/assets/layout/layout.js",
+          "public/landing/assets/diagrams/diagram.css",
+          "public/landing/assets/diagrams/diagram.js",
+          "public/landing/assets/diagrams/mount.js",
+          "public/landing/assets/diagrams/presets.json",
+          "public/landing/assets/img/photo-d183.webp",
+          "public/landing/assets/img/photo-d183-500.webp",
+          "public/landing/assets/img/photo-d183-960.webp",
+          "public/landing/assets/img/credits.json",
+          "public/landing/assets/icons/ui-user.svg",
+          "public/landing/assets/icons/ui-layers.svg",
+          "public/landing/assets/icons/ui-database.svg",
+          "public/landing/assets/icons/ui-message-square.svg",
+          "public/landing/assets/icons/ui-refresh-cw.svg",
+          "public/landing/assets/icons/icons-credits.json"
+        ],
+        "modify": [
+          "public/landing/index.html",
+          "server/landing/landing-html.ts"
+        ],
+        "test": [
+          "scripts/lib/landing-content.test.mjs"
+        ]
+      },
+      "provides": [
+        "public/landing/index.html (skill-built landing: kind software, dealt hero split, 7 sections + close/footer, verbatim copy, honest pictures)",
+        "public/landing/assets/shots/*.jpg (4 real screenshots of the running board, sample data loaded, \"Sample data\" chip visible)"
+      ],
+      "requires": [
+        "GET / serves public/landing/index.html publicly (auth allowlist: exactly \"/\" and \"/landing/*\"; /board stays behind sign-in)",
+        "node scripts/build-landing.mjs [--check] -> LANDING_MODULE_OK",
+        "playwright.landing.config.ts (testDir e2e-landing, *.e2e.ts, projects local :8091 / deployed)",
+        "<BoardPage /> (data-agent-state, 2 s polling while the agent runs, DnD, glide-in, selection app-state, auto-teach)"
+      ],
+      "gate": {
+        "run": "pnpm vitest run scripts/lib/landing-content.test.mjs && node scripts/build-landing.mjs --check",
+        "expect": "PASS — `Tests  7 passed (7)` (the four screenshots exist and are the only product pictures; no testimonials, logos, statistics or people), then `LANDING_MODULE_OK`"
+      },
+      "commit": "feat: build the Stigi landing page from real board screenshots with the design skill",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "landing:62",
+      "subsystem": "landing",
+      "title": "Pass the skill's checkers on the served landing page",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-landing.md",
+      "depends_on": [
+        "landing:60",
+        "landing:61"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "scripts/check-landing.mjs"
+        ],
+        "modify": [
+          "public/landing/index.html",
+          "public/landing/landing.css",
+          "server/landing/landing-html.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "node scripts/check-landing.mjs -> LANDING_CHECKS_OK (consistency.mjs + check.mjs on the served /)"
+      ],
+      "requires": [
+        "public/landing/index.html (skill-built landing: kind software, dealt hero split, 7 sections + close/footer, verbatim copy, honest pictures)",
+        "node scripts/with-dev-server.mjs \"<command>\"... (runs commands against a dev server on :8091)",
+        "node scripts/build-landing.mjs [--check] -> LANDING_MODULE_OK"
+      ],
+      "gate": {
+        "run": "node scripts/build-landing.mjs --check && node scripts/check-landing.mjs",
+        "expect": "`LANDING_MODULE_OK`, both checkers exit 0 (no FAIL rows), then `LANDING_CHECKS_OK`"
+      },
+      "commit": "fix: pass the design skill's consistency and layout checks on the landing page",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "landing:63",
+      "subsystem": "landing",
+      "title": "The dealt `iris-opens` moment on the dark band (cuttable)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-landing.md",
+      "depends_on": [
+        "landing:60",
+        "landing:62"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "public/landing/assets/moments/moments.js",
+          "public/landing/assets/moments/lib.js",
+          "public/landing/assets/moments/iris-opens/moment.css",
+          "public/landing/assets/moments/iris-opens/moment.js"
+        ],
+        "modify": [
+          "public/landing/index.html",
+          "server/landing/landing-html.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "landing moment iris-opens on #actions (references/moments.md)"
+      ],
+      "requires": [
+        "node scripts/check-landing.mjs -> LANDING_CHECKS_OK (consistency.mjs + check.mjs on the served /)",
+        "node scripts/build-landing.mjs [--check] -> LANDING_MODULE_OK"
+      ],
+      "gate": {
+        "run": "node scripts/build-landing.mjs --check && node docs/design/frontend-kit/scripts/moments.mjs check public/landing/index.html --page software && node scripts/check-landing.mjs",
+        "expect": "`LANDING_MODULE_OK`, the moments audit reports no FAIL (one moment, the still rule kept, 0 of 4 WebGL contexts), then `LANDING_CHECKS_OK`"
+      },
+      "commit": "feat: add the dealt iris-opens moment to the landing page",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "landing:64",
+      "subsystem": "landing",
+      "title": "Landing on production (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-landing.md",
+      "depends_on": [
+        "deploy:13",
+        "landing:60",
+        "landing:62"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "landing verified on production: public / and /board behind sign-in"
+      ],
+      "requires": [
+        "production probe disabled (STIGI_ENABLE_PROBE absent)",
+        "e2e-landing/landing-public.e2e.ts (2 tests)",
+        "node scripts/check-landing.mjs -> LANDING_CHECKS_OK (consistency.mjs + check.mjs on the served /)"
+      ],
+      "gate": {
+        "run": "STIGI_E2E_TARGET=deployed pnpm exec playwright test --config playwright.landing.config.ts e2e-landing/landing-public.e2e.ts --project=deployed",
+        "expect": "PASS — `2 passed` (a signed-out `GET /` is 200 with the landing h1 and the \"Try Stigi\" link; a signed-out `/board` shows the sign-in screen)"
+      },
+      "commit": "chore: landing verified on production (no file changes)",
+      "human_gate": true,
+      "gate_profile": "deploy",
       "allow_empty": true,
       "status": "pending"
     }

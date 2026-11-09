@@ -35,10 +35,25 @@ How it uses Agent-Native: the board UI and the agent share one set of defineActi
 
 Live app: TBD-post-build:live-app-url (sign up with any email and password). The demo and the live app use SAMPLE DATA: 200 synthetic comments for a fictional expenses app, labeled as sample in the app.
 
-Pre-existing work and what changed: built on the Agent-Native "chat" template (@agent-native/core 0.226.0) and its @agent-native/toolkit components (app shell, agent sidebar); design tokens and motion rules from the design-taste-frontend kit; libraries @dnd-kit/core, motion, Drizzle, Zod, Vitest, Playwright. Everything Stigi-specific was built during the event on 2026-11-09: all board actions and their tests, the database schema, the board UI, the agent instructions and skills (teach-cluster, sort-feedback, write-report), the daily agent-turn cap, and the Vercel + Neon deployment setup.
+Pre-existing work and what changed: built on the Agent-Native "chat" template (@agent-native/core 0.226.0) and its @agent-native/toolkit components (app shell, agent sidebar); libraries @dnd-kit/core, motion, Drizzle, Zod, Vitest, Playwright. Everything Stigi-specific was built during the event on 2026-11-09: all board actions and their tests, the database schema, the board UI, the agent instructions and skills (teach-cluster, sort-feedback, write-report), the daily agent-turn cap, the public landing page at the site root, and the Vercel + Neon deployment setup.
+
+Third-party assets: the design-taste-frontend design kit (design tokens, layout, motion and UI-fragment styles, the diagram renderer and the "iris-opens" scroll moment, copied into the landing page); the photograph "Tabel day 1" by Jan Kahánek, CC0, via Wikimedia Commons (https://commons.wikimedia.org/wiki/File:Tabel_day_1_(Unsplash).jpg), credited in the landing page footer; the fonts Host Grotesk and JetBrains Mono (SIL Open Font License) via Google Fonts; Tabler Icons (MIT) in the app shell from the template; Lucide icons (ISC) in the landing page diagram. The landing page's product pictures are real screenshots of the running app with the labelled sample data. The landing page shows the real app UI with the synthetic sample comments; it has no testimonials, customer logos or invented statistics.
 
 Team: Dotman-Bei (solo builder), building with Claude Code as an AI pair.
 ```
+
+## Third-party assets (the Rules require identifying them)
+
+| Asset | Where it is used | Licence / source |
+|---|---|---|
+| Agent-Native `chat` template, `@agent-native/core` 0.226.0, `@agent-native/toolkit` | The app scaffold, the app shell, the agent sidebar | MIT, BuilderIO/agent-native |
+| design-taste-frontend kit files (`system.css`, `system.js`, `ui/cards.css`, `ui/base.css`, `ui/ui.js`, the `window` and `chat` UI fragments, `motion/`, `layout/`, `diagrams/`, `moments/` with `iris-opens`) | Copied into `public/landing/assets/` for the landing page; the board uses the same tokens | The builder's own design skill (copied from their local skill folder) |
+| Photograph "Tabel day 1" by Jan Kahánek (kit library frame `d183`) | Landing page, section `by-hand` (a detail slot) | CC0, via Wikimedia Commons: https://commons.wikimedia.org/wiki/File:Tabel_day_1_(Unsplash).jpg. Credited in the landing footer |
+| Host Grotesk, JetBrains Mono | Board and landing typography | SIL Open Font License, via Google Fonts |
+| Tabler Icons | App shell and board menus (from the template) | MIT |
+| Lucide line icons (`ui-user`, `ui-layers`, `ui-database`, `ui-message-square`, `ui-refresh-cw`) | Landing page diagram, fetched by the kit's `icons.mjs` | ISC, Lucide Contributors |
+| Screenshots of Stigi's own board (sample data) | Landing page pictures | Captured from the running app by `e2e-landing/capture-screenshots.e2e.ts`: our own UI, no mock-ups |
+| @dnd-kit/core 6.3.1, motion 14.10.1, Drizzle ORM, Zod, Vitest, Playwright, Vercel CLI | Drag-and-drop, layout animation, data, tests, deploy | MIT / Apache-2.0 (npm) |
 
 ## Facts the closing pass resolves
 
