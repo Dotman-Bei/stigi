@@ -11,7 +11,6 @@ import {
   validateConversationReferences,
 } from "../lib/composer-references.js";
 
-// Report actions (get-board-digest, save-report, get-report) and merge-clusters are added in later tasks.
 const INITIAL_TOOL_NAMES = [
   "view-screen",
   "navigate",
@@ -19,6 +18,10 @@ const INITIAL_TOOL_NAMES = [
   "create-cluster",
   "rename-cluster",
   "move-notes",
+  "merge-clusters",
+  "get-board-digest",
+  "save-report",
+  "get-report",
   "ask-question",
 ];
 
