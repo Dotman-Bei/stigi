@@ -67,6 +67,9 @@ export function BoardPage() {
   const createCluster = useActionMutation("create-cluster", { onError: showError });
   const renameCluster = useActionMutation("rename-cluster", { onError: showError });
   const moveNotes = useActionMutation("move-notes", { onError: showError });
+  const mergeClusters = useActionMutation("merge-clusters", { onError: showError });
+  const deleteCluster = useActionMutation("delete-cluster", { onError: showError });
+  const resetBoard = useActionMutation("reset-board", { onError: showError });
 
   const board: BoardSnapshot | undefined = boardQuery.data;
   const usage = usageQuery.data ?? null;
@@ -259,6 +262,17 @@ export function BoardPage() {
     });
   }
 
+  function resetBoardNow(): void {
+    resetBoard.mutate({}, {
+      onSuccess: () => {
+        firedRef.current = new Set();
+        setSelectedIds(new Set());
+        setSorting(false);
+        toast.success("Board reset.");
+      },
+    });
+  }
+
   function changeAutoTeach(value: boolean): void {
     setAutoTeach(value);
     writeAutoTeach(value);
@@ -280,7 +294,7 @@ export function BoardPage() {
           onSortToggle={toggleSorting}
           onImportCsv={null}
           onOpenReport={null}
-          onResetBoard={null}
+          onResetBoard={resetBoardNow}
         />
         {board === undefined ? (
           <p className="stigi-meta">Loading your board…</p>
@@ -322,9 +336,11 @@ export function BoardPage() {
                           agentDisabled={agentBlocked || cluster.notes.length === 0}
                           onMoreLikeThese={() => void teach(cluster)}
                           onRename={(name) => renameCluster.mutate({ clusterId: cluster.id, name })}
-                          mergeTargets={[]}
-                          onMerge={null}
-                          onDelete={null}
+                          mergeTargets={board.clusters
+                            .filter((c) => c.id !== cluster.id)
+                            .map((c) => ({ id: c.id, name: c.name ?? "Untitled" }))}
+                          onMerge={(targetClusterId) => mergeClusters.mutate({ sourceClusterId: cluster.id, targetClusterId })}
+                          onDelete={() => deleteCluster.mutate({ clusterId: cluster.id })}
                         />
                       }
                     />
