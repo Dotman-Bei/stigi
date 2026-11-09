@@ -78,8 +78,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           content="black-translucent"
         />
         <meta name="apple-mobile-web-app-title" content={APP_TITLE} />
-        <link rel="icon" type="image/svg+xml" href={appPath("/favicon.svg")} />
-        <link rel="apple-touch-icon" href={appPath("/icon-180.svg")} />
+        <link rel="icon" href={appPath("/favicon.svg")} type="image/svg+xml" />
+        <link rel="icon" href={appPath("/favicon.ico")} sizes="48x48" />
+        <link rel="apple-touch-icon" href={appPath("/apple-touch-icon-180.png")} />
         <Meta />
         <Links />
       </head>
