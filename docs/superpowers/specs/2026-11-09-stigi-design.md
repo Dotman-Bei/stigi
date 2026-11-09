@@ -82,6 +82,9 @@ on-chain; the Clips recording; the repo-public flip (Step-3 consent gate).
 | D12 | Cut order if behind | stretch → merge/delete polish → CSV edge cases. Never cut: money shot, deploy skeleton, report, tests | user |
 | D13 | Live-sync mechanism | No Hosted Realtime Sync Gateway; same-tab chat-run tool-completion invalidation + explicit 2 s polling of `get-board` while the agent runs | architect, approved (E) |
 | D14 | Live-key gates | Playwright e2e (framework `agent-native eval` CLI requires a production adapter with a read-only action surface, so it cannot exercise writes) | architect, approved (I) |
+| D15 | Sample layout | **Sample board loads pre-sorted**: 150 notes in 6 deliberately imperfect starting clusters (`created_by = 'sample'`, notes `moved_by NULL`, no reason) + 50 unsorted; 14 plan/billing notes scattered across the wrong clusters and Unsorted (plus the 2 seeds), so the teach pulls from across the board with no prior agent sort; chip "Sample data · pre-sorted starting layout"; every sample artifact stays labeled sample | user, spec review change 1 |
+| D16 | Probe exposure | `/api/duration-probe` returns 404 in production unless `STIGI_ENABLE_PROBE=1`; the skeleton sets the flag for the probe check, then removes it and redeploys; `check-vercel-env.mjs` asserts it is absent afterwards | user, spec review change 2 |
+| D17 | Timing-gate flake rule | A timing gate retries once; if the model misses 35 s twice, the documented action is `AGENT_MODEL=anthropic/claude-haiku-5.5` via env (local `.env` and Vercel), never a flow rewrite | user, spec review change 3 |
 
 ## 4. Architecture
 
@@ -135,7 +138,7 @@ Everything else comes from the scaffold (`zod ^4.4.3`, `drizzle-orm ^0.45.3`, `s
 All tables are prefixed `stigi_`, owned by the signed-in user (`owner_email` = `ctx.userEmail`), one board
 per user. Times are UTC ISO-8601 text. Ids are `crypto.randomUUID()`. Migrations are additive entries in
 `server/db/migrations.ts`, applied by `server/plugins/db.ts` (local/dev startup) and by
-`pnpm migrate:production` (release step).
+`pnpm migrate:production` (release step). The plans apply the DDL below as six single-statement entries (v1–v6: each table and each index separately) because the Neon serverless driver rejects multi-statement strings; the version labels in the SQL comments below are descriptive.
 
 ```sql
 -- v1 create_stigi_clusters
@@ -143,7 +146,7 @@ CREATE TABLE IF NOT EXISTS stigi_clusters (
   id TEXT PRIMARY KEY,
   owner_email TEXT NOT NULL,
   name TEXT,
-  created_by TEXT NOT NULL CHECK (created_by IN ('user','agent')),
+  created_by TEXT NOT NULL CHECK (created_by IN ('user','agent','sample')),
   position INTEGER NOT NULL DEFAULT 0,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
@@ -187,9 +190,10 @@ clears `reason`.
 
 ```ts
 export type Actor = "user" | "agent";
+export type ClusterOrigin = "user" | "agent" | "sample";
 export type NoteSource = "sample" | "import";
 export interface BoardNote { id: string; body: string; source: NoteSource; clusterId: string | null; reason: string | null; movedBy: Actor | null; movedAt: string | null; position: number }
-export interface BoardCluster { id: string; name: string | null; createdBy: Actor; position: number; notes: BoardNote[] }
+export interface BoardCluster { id: string; name: string | null; createdBy: ClusterOrigin; position: number; notes: BoardNote[] }
 export interface BoardSnapshot { clusters: BoardCluster[]; unsorted: BoardNote[]; totalNotes: number; sampleNotes: number }
 export interface AgentUsage { used: number; limit: number; remaining: number; resetsAt: string }
 ```
@@ -202,10 +206,10 @@ one-line `message`. `actorFromCtx(ctx)` = `"agent"` when `ctx.caller === "tool"`
 
 | Action | Input | Behavior | Flags |
 |---|---|---|---|
-| `import-notes` | `{ csv?: string (≤2,000,000 chars), sample?: boolean }` — exactly one | Sample: inserts the 200 `SAMPLE_FEEDBACK` bodies with `source:'sample'`; 409 `sample_already_loaded` if any sample note exists. CSV: `parseFeedbackCsv` → bodies, `source:'import'`. 400 `no_comments` if none; 400 `too_many_notes` if board total would exceed 500. All new notes unsorted, positions continue the max. | POST |
+| `import-notes` | `{ csv?: string (≤2,000,000 chars), sample?: boolean }` — exactly one | Sample (D15): creates the 6 `SAMPLE_START_CLUSTERS` (`created_by:'sample'`) and inserts the 200 `SAMPLE_FEEDBACK` bodies with `source:'sample'` into their starting cluster (150) or Unsorted (50), `moved_by`/`reason` null; 409 `sample_already_loaded` if any sample note exists. CSV: `parseFeedbackCsv` → bodies, `source:'import'`, all unsorted. 400 `no_comments` if none; 400 `too_many_notes` if board total would exceed 500. Positions continue the max per column. | POST |
 | `get-board` | `{}` | Returns `BoardSnapshot` (clusters by position, notes by position) | GET, readOnly |
 | `list-notes` | `{ scope: 'unsorted'\|'all'\|'outside-cluster', clusterId?: string, limit: 1..250 = 60, offset ≥ 0 = 0 }` | Compact rows `{ id, text (≤200 chars), cluster: name \| 'Untitled' \| null }`, `total`, `nextOffset` (null at end). `outside-cluster` requires `clusterId` | GET, readOnly |
-| `create-cluster` | `{ name?: string (1..60), noteIds?: string[] (≤50) }` | Creates cluster (`created_by` = actor) at the next position; moves `noteIds` in (user only). When actor is agent and `noteIds` is non-empty → 400 `agent_move_requires_reason` | POST |
+| `create-cluster` | `{ name?: string (1..60), noteIds?: string[] (≤50) }` | Creates cluster (`created_by` = actor) at the front (position = min − 1, newest first, so a new cluster is always visible at the top of the grid); moves `noteIds` in (user only). When actor is agent and `noteIds` is non-empty → 400 `agent_move_requires_reason` | POST |
 | `rename-cluster` | `{ clusterId, name (1..60) }` | Renames; 404 `cluster_not_found` | POST |
 | `move-notes` | `{ moves: [{ noteId, clusterId: string\|null, reason?: string (≤140) }] (1..50) }` | Validates every note + target cluster is owned (404s). Agent moves into a cluster require a non-empty reason → 400 `reason_required`. Sets `cluster_id`, `reason` (agent: given; user: null), `moved_by`, `moved_at`, `position` (end of target). | POST |
 | `merge-clusters` | `{ sourceClusterId, targetClusterId }` (different) | Moves all source notes to target (`moved_by` actor; agent reason `Merged into "<target name>"`), deletes source | POST |
@@ -237,7 +241,7 @@ clusterId: string | null, capturedAt }`, cleared (null) when empty. `navigate` (
 | Flow | Visible message | Hidden context |
 |---|---|---|
 | Teach | `Teach: name this new cluster and pull in every note that belongs with it.` | `Stigi teach request. clusterId=<id>. Seed notes: [<id>] "<text>"; … Follow the teach-cluster skill.` |
-| Sort | `Sort the next batch of unsorted notes (up to 40).` | `Stigi sort request. Follow the sort-feedback skill. Process ONE batch of at most 40 unsorted notes, then stop.` |
+| Sort | `Sort the next batch of unsorted notes (up to 25).` | `Stigi sort request. Follow the sort-feedback skill. Process ONE batch of at most 25 unsorted notes, then stop.` |
 | Report | `Write the insight report from the current board.` | `Stigi report request. Follow the write-report skill.` |
 
 **Auto-teach rule (D7).** After every board refetch, `findAutoTeachCluster(snapshot, firedIds)` returns
@@ -250,11 +254,11 @@ selection bar with ≥ 2 selected notes) sends the same handoff on demand; with 
 first calls `create-cluster { noteIds }`, which then auto-teaches.
 
 **Agent instructions.** `AGENTS.md` (always loaded) gains a Stigi section: what the board is; invariants
-(every agent move carries a one-line reason; never more than 50 moves per call; one batch per sort turn;
+(every agent move carries a one-line reason (aim ≤ 80 chars); never more than 50 moves per call; one batch per sort turn (≤ 25 notes);
 call `view-screen` before acting on what the user sees; never invent notes; sample data is synthetic);
 the action list. Skills (loaded on demand):
 
-- `sort-feedback`: `list-notes {scope:'unsorted', limit:40}` → reuse existing cluster names where they fit,
+- `sort-feedback`: `view-screen` (cluster ids) + `list-notes {scope:'unsorted', limit:25}` → reuse existing clusters where they fit,
   otherwise `create-cluster {name}` (≤ 8 themes on the board, 2–4 word names) → one `move-notes` call
   with a reason per note → reply one line: "Sorted N notes; M unsorted remain." Stop.
 - `teach-cluster`: read the seeds from the context (or `view-screen` → `selectedCluster`) → infer the
@@ -287,15 +291,23 @@ each tool call has a 60 s hard limit. Vercel plan duration limits are not in the
   `scripts/check-vercel-output.mjs` fails the build gate unless every agent-chat function's
   `.vc-config.json` has `maxDuration >= 60`.
 - **Probe.** `GET /api/duration-probe?ms=N` (auth-guarded by the template's middleware, N clamped to
-  0..70,000) sleeps N ms and returns `{ ok: true, waitedMs }`. The skeleton e2e calls it on the deployed
-  URL with 45,000 and 58,000 ms; both must return 200. **Tripwire:** if the 45 s probe fails, the
-  platform would kill agent turns before the framework's 40 s chunk boundary → STOP and ask the user.
+  0..70,000) sleeps N ms and returns `{ ok: true, waitedMs }`. **In production it returns 404 unless
+  `STIGI_ENABLE_PROBE=1`** (D16: open sign-up + a 70 s sleep would be compute abuse); in development it is
+  always on. The skeleton deploy sets the flag, the skeleton e2e calls the deployed URL with 45,000 and
+  58,000 ms (both must return 200), then the flag is removed and the app redeployed;
+  `check-vercel-env.mjs` fails if the flag is still present and `e2e/probe-disabled.spec.ts` asserts the
+  deployed probe answers 404. **Tripwire:** if the 45 s probe fails, the platform would kill agent turns
+  before the framework's 40 s chunk boundary → STOP and ask the user.
 - **Batch rule.** Every agent turn is one batch that fits one chunk: Teach = 1–2 reads + rename + one
-  `move-notes` (≤ 20); Sort = 1 read + ≤ 3 `create-cluster` + one `move-notes` (≤ 40). "Sort with agent" is
+  `move-notes` (≤ 20); Sort = 2 reads + ≤ 3 `create-cluster` + one `move-notes` (≤ 25; 40 reasoned moves measured too close to 35 s of model output). "Sort with agent" is
   a client-side loop: when a turn ends (`isGenerating` false), unsorted > 0, the loop is on and usage
-  remains, it sends the next Sort handoff; the user can stop it; it stops on any error. 200 notes = 5 turns.
+  remains, it sends the next Sort handoff; the user can stop it; it stops on any error. The pre-sorted sample's 50 unsorted notes = 2 turns; a 200-note CSV = 8 turns.
 - **Timing gate.** `TURN_BUDGET_MS = 35_000` (5 s inside the 40 s chunk, far inside 60 s): the live e2e
   asserts a Teach turn and a Sort-batch turn each finish under it, locally and on the deployed URL.
+- **Flake rule (D17).** Timing specs run with one retry (`test.describe.configure({ retries: 1 })`). If the
+  model misses 35 s on both attempts, the documented action is to set
+  `AGENT_MODEL=anthropic/claude-haiku-5.5` (local `.env`; Vercel production env + redeploy) and re-run the
+  gate — never to rewrite the flow, the batch sizes or the budget.
 
 ## 9. Live sync under polling (requirement 4; D13)
 
@@ -326,8 +338,8 @@ Stigi is an app inside the template shell, not a marketing page, so: the `:root`
 radius, spacing, motion and the one-button/one-card rules do.
 
 ```css
-/* app/styles/stigi-tokens.css — values printed by start.mjs; scoped to the board */
-.stigi {
+/* app/styles/stigi-tokens.css — values printed by start.mjs; scoped to the board route wrapper */
+.stigi-route, .stigi {
   --p-bg: #ecebe7; --p-surface: #e1dfd9; --p-ink: #38450f; --p-muted: #5a6537;
   --p-accent: #38450f; --p-accent-ink: #ecebe7; --p-action: #38450f; --p-action-ink: #ecebe7;
   --p-inv-bg: #38450f; --p-inv-surface: #435020; --p-inv-ink: #ecebe7; --p-inv-muted: #bbbfaf;
@@ -347,19 +359,21 @@ Fonts load from the board route's `links()`:
 `https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400..700&family=JetBrains+Mono:wght@400..500&display=swap`.
 
 **Layout (`/board`).** Template left sidebar | board | template agent sidebar (right). Board =
-top bar, then a horizontally scrolling row: Unsorted tray (first), cluster columns (by position),
-New-cluster zone (last). `/board/report` opens the report pane on the right of the board (inside the
+top bar, then a sticky left rail (the New-cluster zone above the Unsorted tray) beside a wrapping grid of
+cluster columns (newest cluster first; each column scrolls internally), sized so every column is visible
+at once on a 1920×1400 window, which the e2e drags rely on. `/board/report` opens the report pane on the right of the board (inside the
 board area, left of the agent sidebar).
 
-- **Top bar:** `h1` "Feedback board"; when sample notes exist, a chip `Sample data · 200 synthetic
-  comments`; counts (`N notes · K themes · U unsorted`); usage (`R of L agent turns left today`);
+- **Top bar:** `h1` "Feedback board"; when sample notes exist, a chip `Sample data · pre-sorted starting
+  layout`; counts (`N notes · K themes · U unsorted`); usage (`R of L agent turns left today`);
   Auto-teach switch; buttons: Import CSV, Sort with agent (toggles to Stop sorting while the loop runs),
   Report; a Reset board control (two-click confirm, no browser dialog).
-- **First-run (D10):** when the board has no notes, the board area shows only: heading "Sort customer
-  feedback with an agent", one line "Load 200 synthetic sample comments for a fictional expenses app,
-  then drag two notes together to teach the agent a theme.", the one primary button **Load sample data
-  (200 notes)**, and a quiet text link "or import your own CSV". One click reaches a board where the
-  money shot is two drags away.
+- **First-run (D10, D15):** when the board has no notes, the board area shows only: heading "Sort
+  customer feedback with an agent", one line "Load 200 synthetic sample comments for a fictional expenses
+  app, already roughly sorted. Drag two notes into a new cluster to teach the agent a theme.", the one
+  primary button **Load sample data (200 notes)**, and a quiet text link "or import your own CSV". One
+  click reaches a pre-sorted board (6 imperfect clusters + 50 unsorted) where the money shot is two drags
+  away, with no agent sort first.
 - **Note card:** body (≤ 4 lines, then fade), agent reason chip (mono, `--t-label`, accent outline,
   prefixed "Agent:"), selected state (accent ring); click toggles selection; drag via `@dnd-kit/core`
   (PointerSensor with 6 px activation + KeyboardSensor); `DragOverlay` shows the lifted card.
@@ -399,6 +413,8 @@ board area, left of the agent sidebar).
   credit limit is the backstop).
 - **Key server-side only.** No `VITE_`-prefixed secret anywhere; `scripts/check-vercel-output.mjs` fails
   if any file under `.vercel/output/static` contains `sk-or-`.
+- **No open compute probe.** `/api/duration-probe` is 404 in production unless `STIGI_ENABLE_PROBE=1`,
+  which exists only during the skeleton's probe check (D16).
 
 ## 12. Deployment (requirements 1, 2, 5, 7; D6, D8, D9)
 
@@ -416,7 +432,9 @@ npx vercel deploy --prebuilt --prod                                # prints the 
 `CRON_SECRET`, `OPENROUTER_API_KEY`, `AGENT_ENGINE`, `AGENT_MODEL`, `AGENT_ENGINE_PREFER_BYO_KEY`,
 `AUTH_REQUIRE_EMAIL_VERIFICATION`, `STIGI_DAILY_AGENT_TURNS`, `AGENT_NATIVE_RELEASE_MIGRATIONS` (=1:
 release migrations own schema setup, request functions skip migration probes — same setting the
-template's `netlify.toml` uses). `scripts/check-vercel-env.mjs` asserts all names exist in production.
+template's `netlify.toml` uses). `scripts/check-vercel-env.mjs` asserts all names exist in production
+and that `STIGI_ENABLE_PROBE` is absent (`--allow-probe` relaxes only that check during the skeleton's
+probe step).
 
 **Walking skeleton first (plan #2).** Right after the scaffold: the bare app (template + DB plumbing +
 a minimal `/board` page) deployed live on Neon with Better Auth sign-up/sign-in and
@@ -453,10 +471,15 @@ decrease). The 429 cap error is pre-empted by the UI usage check and explained i
 - **E2E (Playwright 1.65, chromium):** `local` project (starts `pnpm exec agent-native dev --port 8080
   --strictPort` unless one is running) and `deployed` project (`STIGI_PROD_URL`). Specs: `board-dnd`
   (no key), `report-export` (no key), `money-shot` (key; timing + no-reload + ≥ 6 agent-moved notes with
-  reasons + ≥ 2 board updates during the turn), `sort-batch` (key; one batch, 30–40 notes, timing),
+  reasons + ≥ 2 board updates during the turn), `sort-batch` (key; one batch of 20–25 notes, timing),
   `deploy-skeleton` (deployed; auth wall, sign-up, probes).
 - **Only these tasks need `OPENROUTER_API_KEY`:** the live money-shot e2e (local), the live sort-batch
-  e2e (local), and the M1/M2/M3 deployed gates. Every other gate is deterministic.
+  e2e (local), and the M1/M2/M3 deployed gates. Every other gate is deterministic. The live money-shot
+  and M1 gates run on the pre-sorted sample layout with no prior sort (D15).
+- **Timing flake rule (D17):** one retry; two misses → switch `AGENT_MODEL` to
+  `anthropic/claude-haiku-5.5` via env and re-run; never rewrite the flow.
+- **Sample label:** every task that touches sample data keeps the "sample" label (`source:'sample'`,
+  `created_by:'sample'`, the chip, the first-run copy, the README and the report's source line).
 - **Smoke:** `pnpm typecheck` (~55 s), `pnpm build` (~3 min), the Vercel build + output check (~2.5 min).
 
 ## 15. Plans and ordering
@@ -466,8 +489,9 @@ Five plans, one per subsystem, ordered as a vertical slice. All in `docs/superpo
 1. `2026-11-09-stigi-foundation.md` — scaffold to repo root, env example, DB plumbing, shared types,
    owner/caller helpers, test DB, minimal `/board` page + nav + home path.
 2. `2026-11-09-stigi-deploy.md` — nitro config + probe route + output/env checks, Playwright + auth
-   helper + skeleton spec, and the human-gated accounts → env → skeleton deploy (tripwire), plus the
-   M1/M2/M3 redeploy tasks (each depends only on the code it ships).
+   helper + skeleton spec, and the human-gated accounts → env → skeleton deploy with the probe flag
+   (tripwire) → probe-off redeploy, plus the M1/M2/M3 redeploy tasks (numbered 50–52; each depends only
+   on the code it ships and the probe-off task; nothing depends on them except Step 3 on M3).
 3. `2026-11-09-stigi-board.md` — the money-shot slice: sample data, CSV, board store, all board actions,
    view-screen, usage guard + cap, tokens, board UI with DnD and glide-in, selection app-state, auto-teach,
    agent instructions + system prompt, no-key DnD e2e, live money-shot e2e.

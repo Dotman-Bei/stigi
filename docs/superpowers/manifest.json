@@ -1,0 +1,1945 @@
+{
+  "project": "stigi",
+  "spec": "docs/superpowers/specs/2026-11-09-stigi-design.md",
+  "subsystems": [
+    "foundation",
+    "deploy",
+    "board",
+    "sort-report",
+    "ship"
+  ],
+  "notes": [
+    "Task numbers are global across the five plans; ids are <subsystem>:<N>.",
+    "Deploy tasks (deploy:10-13, deploy:50-52) are never dependencies of build tasks; only deploy:52 (M3) blocks Step 3 submission. Keep dispatching build tasks while a human-gated task waits.",
+    "TRIPWIRE: if deploy:12 is not done by build hour ~5, stop and ask the user whether to downgrade to a local-only demo (also stop if the 45 s duration probe fails).",
+    "Timing flake rule: board:33, sort-report:36, deploy:50, deploy:51 retry once; two misses of 35 s -> AGENT_MODEL=anthropic/claude-haiku-5.5 via env, never a flow rewrite.",
+    "board:33 and sort-report:36 run the live agent with the user's OPENROUTER_API_KEY from .env (key operation) -> human_gate.",
+    "Cut order if behind: stretch -> merge/delete polish (sort-report:37-38) -> CSV edge cases (sort-report:41). Never cut the money shot, the deploy skeleton, the report or the tests."
+  ],
+  "tasks": [
+    {
+      "id": "foundation:1",
+      "subsystem": "foundation",
+      "title": "Scaffold the Agent-Native chat app into the repo root",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-foundation.md",
+      "depends_on": [],
+      "effort": "low",
+      "model_tier": "fast",
+      "files": {
+        "create": [
+          ".agents/skills/actions/SKILL.md",
+          ".agents/skills/actions/references/action-fields.md",
+          ".agents/skills/actions/references/examples.md",
+          ".agents/skills/actions/references/provider-apis.md",
+          ".agents/skills/adding-a-feature/SKILL.md",
+          ".agents/skills/agent-native-docs/SKILL.md",
+          ".agents/skills/agent-native-toolkit/SKILL.md",
+          ".agents/skills/build-an-app/SKILL.md",
+          ".agents/skills/build-an-app/references/data-and-access.md",
+          ".agents/skills/build-an-app/references/edit-points-chat.md",
+          ".agents/skills/build-an-app/references/edit-points-default.md",
+          ".agents/skills/build-an-app/references/rooms-example.md",
+          ".agents/skills/build-an-app/references/verification.md",
+          ".agents/skills/client-side-routing/SKILL.md",
+          ".agents/skills/context-awareness/SKILL.md",
+          ".agents/skills/customizing-agent-native/SKILL.md",
+          ".agents/skills/delegate-to-agent/SKILL.md",
+          ".agents/skills/frontend-design/SKILL.md",
+          ".agents/skills/frontend-design/references/visual-direction.md",
+          ".agents/skills/performance/SKILL.md",
+          ".agents/skills/real-time-sync/SKILL.md",
+          ".agents/skills/reliable-mutations/SKILL.md",
+          ".agents/skills/secrets/SKILL.md",
+          ".agents/skills/security/SKILL.md",
+          ".agents/skills/shadcn-ui/SKILL.md",
+          ".agents/skills/sharing/SKILL.md",
+          ".agents/skills/storing-data/SKILL.md",
+          ".env.example",
+          ".gitignore",
+          ".ignore",
+          ".mcp.json",
+          ".oxfmtrc.json",
+          "AGENTS.md",
+          "CHANGELOG.md",
+          "DESIGN.md",
+          "DEVELOPING.md",
+          "actions/hello.ts",
+          "actions/navigate.ts",
+          "actions/provider-api-request.ts",
+          "actions/run.ts",
+          "actions/view-screen.ts",
+          "agent-native.config.ts",
+          "agent-native.json",
+          "app/components/ChatComposerContext.tsx",
+          "app/components/chat/ChatHomeRedirect.tsx",
+          "app/components/chat/ChatRouteContent.tsx",
+          "app/components/home/HomePage.tsx",
+          "app/components/layout/AgentInspector.tsx",
+          "app/components/layout/Header.tsx",
+          "app/components/layout/Layout.tsx",
+          "app/components/layout/MobileAppBar.tsx",
+          "app/components/layout/Sidebar.tsx",
+          "app/components/ui/button.tsx",
+          "app/components/ui/card.tsx",
+          "app/components/ui/dropdown-menu.tsx",
+          "app/components/ui/hover-card.tsx",
+          "app/components/ui/input.tsx",
+          "app/components/ui/item.tsx",
+          "app/components/ui/label.tsx",
+          "app/components/ui/separator.tsx",
+          "app/components/ui/sheet.tsx",
+          "app/components/ui/skeleton.tsx",
+          "app/components/ui/toolkit-provider.tsx",
+          "app/components/ui/tooltip.tsx",
+          "app/design-system.ts",
+          "app/entry.client.tsx",
+          "app/entry.server.tsx",
+          "app/global.css",
+          "app/hooks/use-navigation-state.ts",
+          "app/i18n/ar-SA.ts",
+          "app/i18n/de-DE.ts",
+          "app/i18n/en-US.ts",
+          "app/i18n/es-ES.ts",
+          "app/i18n/fr-FR.ts",
+          "app/i18n/hi-IN.ts",
+          "app/i18n/index.ts",
+          "app/i18n/ja-JP.ts",
+          "app/i18n/ko-KR.ts",
+          "app/i18n/pt-BR.ts",
+          "app/i18n/zh-CN.ts",
+          "app/i18n/zh-TW.ts",
+          "app/lib/app-config.ts",
+          "app/lib/chat-home-thread.ts",
+          "app/lib/chat-paths.ts",
+          "app/lib/tab-id.ts",
+          "app/lib/utils.ts",
+          "app/root.tsx",
+          "app/routes.ts",
+          "app/routes/_index.tsx",
+          "app/routes/agent.tsx",
+          "app/routes/chat.$threadId.tsx",
+          "app/routes/chat._index.tsx",
+          "app/routes/database.tsx",
+          "app/routes/extensions.$id.$slug.tsx",
+          "app/routes/extensions.$id.tsx",
+          "app/routes/extensions._index.tsx",
+          "app/routes/extensions.tsx",
+          "app/routes/home.tsx",
+          "app/routes/observability.tsx",
+          "app/routes/settings.$.tsx",
+          "app/routes/settings.tsx",
+          "app/routes/team.tsx",
+          "app/vite-env.d.ts",
+          "changelog/2026-08-27-chat-includes-provider-runtimes-after-deployment.md",
+          "changelog/2026-09-27-chat-missing-provider-retry.md",
+          "changelog/2026-09-30-compact-composer-context-menus.md",
+          "changelog/2026-10-10-home-handoff-recovery-capacity.md",
+          "components.json",
+          "learnings.defaults.md",
+          "netlify.toml",
+          "package.json",
+          "pnpm-lock.yaml",
+          "pnpm-workspace.yaml",
+          "public/agent-native-icon-dark.svg",
+          "public/agent-native-icon-light.svg",
+          "public/agent-native-logo-dark.svg",
+          "public/agent-native-logo-light.svg",
+          "public/favicon.svg",
+          "public/icon-180.svg",
+          "public/icon-192.svg",
+          "public/icon-512.svg",
+          "public/manifest.json",
+          "react-router.config.ts",
+          "scripts/migrate-production.ts",
+          "server/lib/composer-reference-messages.ts",
+          "server/lib/composer-references.ts",
+          "server/middleware/auth.ts",
+          "server/plugins/agent-chat.ts",
+          "server/plugins/agent-native-email-branding.ts",
+          "server/plugins/auth.ts",
+          "server/plugins/otel.ts",
+          "server/routes/[...page].get.ts",
+          "server/routes/index.get.ts",
+          "ssr-entry.ts",
+          "tsconfig.json",
+          "vite.config.ts",
+          "vitest.config.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "requires": [],
+      "gate": {
+        "run": "pnpm typecheck && echo TYPECHECK_OK",
+        "expect": "`TYPECHECK_OK` (about 55 s; it also generates `.generated/`, which is git-ignored)"
+      },
+      "commit": "chore: scaffold Stigi from the Agent-Native chat template (core 0.226.0)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "foundation:2",
+      "subsystem": "foundation",
+      "title": "Database plumbing, shared types, owner and caller helpers",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-foundation.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "server/db/schema.ts",
+          "server/db/migrations.ts",
+          "server/db/index.ts",
+          "server/db/test-db.ts",
+          "server/plugins/db.ts",
+          "shared/board-types.ts",
+          "server/lib/owner.ts",
+          "server/lib/caller.ts"
+        ],
+        "modify": [
+          ".env.example",
+          "vitest.config.ts"
+        ],
+        "test": [
+          "server/db/schema.test.ts",
+          "server/lib/owner.test.ts"
+        ]
+      },
+      "provides": [
+        "getDb(): PgDatabase (typed with schema)",
+        "schema.stigiClusters",
+        "schema.stigiNotes",
+        "schema.stigiReports",
+        "schema.stigiAgentTurns",
+        "STIGI_MIGRATIONS: MigrationEntry[]",
+        "resetTestDb(): Promise<void>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "actorFromCtx(ctx: CallerContext | undefined): Actor",
+        "type BoardNote",
+        "type BoardCluster",
+        "type BoardSnapshot",
+        "type AgentUsage",
+        "type Actor = \"user\" | \"agent\"",
+        "type ClusterOrigin = \"user\" | \"agent\" | \"sample\""
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/db/schema.test.ts server/lib/owner.test.ts",
+        "expect": "PASS — `Test Files  2 passed (2)`"
+      },
+      "commit": "feat: add stigi database schema, migrations and owner/caller helpers",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "foundation:3",
+      "subsystem": "foundation",
+      "title": "Board shell route, nav link, home path and navigation views",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-foundation.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/routes/board.tsx"
+        ],
+        "modify": [
+          "app/hooks/use-navigation-state.ts",
+          "app/components/layout/Sidebar.tsx",
+          "server/plugins/agent-native-email-branding.ts"
+        ],
+        "test": [
+          "app/hooks/use-navigation-state.test.ts"
+        ]
+      },
+      "provides": [
+        "/board route shell with h1 \"Feedback board\"",
+        "navigation views: /board -> \"board\", /board/report -> \"report\"",
+        "pathForCommand({ view: \"report\" }) -> \"/board/report\""
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/hooks/use-navigation-state.test.ts && pnpm typecheck && echo SHELL_OK",
+        "expect": "PASS — `Test Files  1 passed (1)` then `SHELL_OK`"
+      },
+      "commit": "feat: add the /board shell route, sidebar link and board navigation views",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:6",
+      "subsystem": "deploy",
+      "title": "Duration probe library and route",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [
+          "server/lib/duration-probe.ts",
+          "server/routes/api/duration-probe.get.ts"
+        ],
+        "modify": [],
+        "test": [
+          "server/lib/duration-probe.test.ts"
+        ]
+      },
+      "provides": [
+        "clampProbeMs(raw: unknown): number",
+        "isProbeEnabled(env: ProbeEnv): boolean",
+        "GET /api/duration-probe?ms=N (404 in production unless STIGI_ENABLE_PROBE=1)"
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/duration-probe.test.ts && pnpm typecheck && echo PROBE_OK",
+        "expect": "PASS — `Test Files  1 passed (1)` then `PROBE_OK`"
+      },
+      "commit": "feat: add the flag-gated duration probe route",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:7",
+      "subsystem": "deploy",
+      "title": "Vercel function duration config and build-output check",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:6"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "nitro.config.ts",
+          "scripts/lib/vercel-output.mjs",
+          "scripts/check-vercel-output.mjs"
+        ],
+        "modify": [],
+        "test": [
+          "scripts/lib/vercel-output.test.mjs"
+        ]
+      },
+      "provides": [
+        "nitro.config.ts vercel maxDuration 60 (agent-chat functionRules)",
+        "node scripts/check-vercel-output.mjs -> VERCEL_OUTPUT_OK"
+      ],
+      "requires": [
+        "GET /api/duration-probe?ms=N (404 in production unless STIGI_ENABLE_PROBE=1)"
+      ],
+      "gate": {
+        "run": "pnpm vitest run scripts/lib/vercel-output.test.mjs && NITRO_PRESET=vercel AGENT_NATIVE_VERCEL_CRON_SCHEDULE=\"0 9 * * *\" pnpm build && node scripts/check-vercel-output.mjs",
+        "expect": "PASS — `Test Files  1 passed (1)`, `Build complete.`, then `VERCEL_OUTPUT_OK agentChatFunctions=3 maxDuration>=60 cron=daily keyLeaks=0` (about 3 minutes; `.vercel/` is git-ignored)"
+      },
+      "commit": "feat: set Vercel function maxDuration for agent-chat and add the build-output check",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:8",
+      "subsystem": "deploy",
+      "title": "Vercel CLI and the production env-name check",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [
+          "scripts/lib/vercel-env.mjs",
+          "scripts/check-vercel-env.mjs"
+        ],
+        "modify": [
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "scripts/lib/vercel-env.test.mjs"
+        ]
+      },
+      "provides": [
+        "pnpm exec vercel (vercel@65.12.1 devDependency)",
+        "node scripts/check-vercel-env.mjs [--allow-probe] [--require-probe] -> VERCEL_ENV_OK"
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run scripts/lib/vercel-env.test.mjs",
+        "expect": "PASS — `Test Files  1 passed (1)`"
+      },
+      "commit": "feat: pin the Vercel CLI and add the production env-name check",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:9",
+      "subsystem": "deploy",
+      "title": "Playwright setup, auth helper and the skeleton specs",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "foundation:3",
+        "deploy:6"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "playwright.config.ts",
+          "e2e/helpers/auth.ts",
+          "e2e/deploy-skeleton.spec.ts",
+          "e2e/probe-disabled.spec.ts"
+        ],
+        "modify": [
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": []
+      },
+      "provides": [
+        "playwright projects \"local\" (dev server :8080) and \"deployed\" (STIGI_E2E_TARGET=deployed, e2e/production-url.txt)",
+        "signUpAndSignIn(page: Page, baseURL: string): Promise<TestAccount>",
+        "e2e/deploy-skeleton.spec.ts (@auth x2, @probe x1)",
+        "e2e/probe-disabled.spec.ts"
+      ],
+      "requires": [
+        "/board route shell with h1 \"Feedback board\"",
+        "GET /api/duration-probe?ms=N (404 in production unless STIGI_ENABLE_PROBE=1)"
+      ],
+      "gate": {
+        "run": "pnpm exec playwright test e2e/deploy-skeleton.spec.ts --project=local",
+        "expect": "PASS — `3 passed` (about 2–3 minutes including dev-server start and the 45 s + 58 s probes)"
+      },
+      "commit": "test: add Playwright projects, the fresh-account auth helper and the deploy skeleton specs",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:10",
+      "subsystem": "deploy",
+      "title": "Accounts ready — Neon project and Vercel CLI login (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:8"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "Vercel CLI logged in and project linked (.vercel/project.json)",
+        "Neon pooled DATABASE_URL available to the user"
+      ],
+      "requires": [
+        "pnpm exec vercel (vercel@65.12.1 devDependency)"
+      ],
+      "gate": {
+        "run": "pnpm exec vercel whoami && test -f .vercel/project.json && echo ACCOUNTS_READY",
+        "expect": "the Vercel username, then `ACCOUNTS_READY`"
+      },
+      "commit": "chore: accounts ready for the Stigi deploy (no file changes)",
+      "human_gate": true,
+      "gate_profile": "account",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:11",
+      "subsystem": "deploy",
+      "title": "Production environment variables (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:8",
+        "deploy:10"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "Vercel production env set, including temporary STIGI_ENABLE_PROBE=1"
+      ],
+      "requires": [
+        "Vercel CLI logged in and project linked (.vercel/project.json)",
+        "node scripts/check-vercel-env.mjs [--allow-probe] [--require-probe] -> VERCEL_ENV_OK"
+      ],
+      "gate": {
+        "run": "node scripts/check-vercel-env.mjs --allow-probe --require-probe",
+        "expect": "`VERCEL_ENV_OK names=11 probe=present` (the count may be higher if Vercel adds system variables; `VERCEL_ENV_OK` and `probe=present` are what matter)"
+      },
+      "commit": "chore: production env configured for Stigi (no file changes)",
+      "human_gate": true,
+      "gate_profile": "secret",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:12",
+      "subsystem": "deploy",
+      "title": "Deploy the walking skeleton with the probe on (HUMAN GATE, TRIPWIRE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "foundation:2",
+        "foundation:3",
+        "deploy:7",
+        "deploy:9",
+        "deploy:11"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "e2e/production-url.txt"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "deployed skeleton at the URL in e2e/production-url.txt"
+      ],
+      "requires": [
+        "Vercel production env set, including temporary STIGI_ENABLE_PROBE=1",
+        "node scripts/check-vercel-output.mjs -> VERCEL_OUTPUT_OK",
+        "e2e/deploy-skeleton.spec.ts (@auth x2, @probe x1)",
+        "STIGI_MIGRATIONS: MigrationEntry[]"
+      ],
+      "gate": {
+        "run": "STIGI_E2E_TARGET=deployed pnpm exec playwright test e2e/deploy-skeleton.spec.ts --project=deployed",
+        "expect": "PASS — `3 passed` (signed-out wall, fresh sign-up reaches \"Feedback board\", 45 s and 58 s probes return 200)"
+      },
+      "commit": "chore: record the Stigi production URL after the skeleton deploy",
+      "human_gate": true,
+      "gate_profile": "deploy",
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:13",
+      "subsystem": "deploy",
+      "title": "Disable the probe and redeploy (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:9",
+        "deploy:12"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "production probe disabled (STIGI_ENABLE_PROBE absent)"
+      ],
+      "requires": [
+        "deployed skeleton at the URL in e2e/production-url.txt",
+        "e2e/probe-disabled.spec.ts"
+      ],
+      "gate": {
+        "run": "node scripts/check-vercel-env.mjs && STIGI_E2E_TARGET=deployed pnpm exec playwright test e2e/probe-disabled.spec.ts e2e/deploy-skeleton.spec.ts --project=deployed --grep-invert @probe",
+        "expect": "`VERCEL_ENV_OK names=10 probe=absent` then `3 passed`"
+      },
+      "commit": "chore: production duration probe disabled (no file changes)",
+      "human_gate": true,
+      "gate_profile": "deploy",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:50",
+      "subsystem": "deploy",
+      "title": "M1 — redeploy the money-shot slice and run the money shot on production (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:13",
+        "board:32",
+        "board:33"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "M1 deployed: money shot verified on production"
+      ],
+      "requires": [
+        "production probe disabled (STIGI_ENABLE_PROBE absent)",
+        "e2e/money-shot.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)"
+      ],
+      "gate": {
+        "run": "STIGI_E2E_TARGET=deployed pnpm exec playwright test e2e/money-shot.spec.ts --project=deployed",
+        "expect": "exit code 0 — `1 passed` (or `1 flaky` if the one allowed retry was used). Two misses of the 35 s budget → apply the timing flake rule from this plan's header (switch `AGENT_MODEL` to `anthropic/claude-haiku-5.5`, redeploy, re-run); never change the flow."
+      },
+      "commit": "chore: M1 deployed and verified on production (no file changes)",
+      "human_gate": true,
+      "gate_profile": "deploy",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:51",
+      "subsystem": "deploy",
+      "title": "M2 — redeploy sort + report and verify them on production (HUMAN GATE)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:13",
+        "sort-report:36",
+        "sort-report:38",
+        "sort-report:41",
+        "sort-report:42"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "M2 deployed: sort batch and report export verified on production"
+      ],
+      "requires": [
+        "production probe disabled (STIGI_ENABLE_PROBE absent)",
+        "e2e/sort-batch.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)",
+        "e2e/report-export.spec.ts"
+      ],
+      "gate": {
+        "run": "STIGI_E2E_TARGET=deployed pnpm exec playwright test e2e/sort-batch.spec.ts e2e/report-export.spec.ts --project=deployed",
+        "expect": "exit code 0 — `2 passed` (or `1 flaky` + `1 passed`). Timing flake rule applies to the sort spec."
+      },
+      "commit": "chore: M2 deployed and verified on production (no file changes)",
+      "human_gate": true,
+      "gate_profile": "deploy",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "deploy:52",
+      "subsystem": "deploy",
+      "title": "M3 — final redeploy and the full production suite (HUMAN GATE; blocks submission)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-deploy.md",
+      "depends_on": [
+        "deploy:13",
+        "ship:44"
+      ],
+      "effort": "medium",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "M3 deployed: full production suite green (submission unblocked)"
+      ],
+      "requires": [
+        "production probe disabled (STIGI_ENABLE_PROBE absent)",
+        "final local verification: vitest + typecheck + build green"
+      ],
+      "gate": {
+        "run": "node scripts/check-vercel-env.mjs && STIGI_E2E_TARGET=deployed pnpm exec playwright test --project=deployed --grep-invert @probe",
+        "expect": "`VERCEL_ENV_OK … probe=absent`, then exit code 0 — `8 passed` (skeleton @auth ×2, probe-disabled, board-dnd ×2, money-shot, sort-batch, report-export; `flaky` entries from the single allowed retry still exit 0)"
+      },
+      "commit": "chore: M3 final deploy verified on production (no file changes)",
+      "human_gate": true,
+      "gate_profile": "deploy",
+      "allow_empty": true,
+      "status": "pending"
+    },
+    {
+      "id": "board:14",
+      "subsystem": "board",
+      "title": "Labeled sample feedback with a pre-sorted starting layout",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [
+          "shared/sample-feedback.ts"
+        ],
+        "modify": [],
+        "test": [
+          "shared/sample-feedback.test.ts"
+        ]
+      },
+      "provides": [
+        "SAMPLE_FEEDBACK: readonly SampleFeedback[] (200 labeled sample notes)",
+        "SAMPLE_START_CLUSTERS (6 starting cluster names)",
+        "SAMPLE_LABEL = \"Sample data · pre-sorted starting layout\"",
+        "MONEY_SHOT_SEEDS = [\"which plan am I even on?\", \"the billing page makes no sense\"]"
+      ],
+      "requires": [
+        "type BoardSnapshot"
+      ],
+      "gate": {
+        "run": "pnpm vitest run shared/sample-feedback.test.ts",
+        "expect": "PASS — `Tests  5 passed (5)`"
+      },
+      "commit": "feat: add 200 labeled sample comments with a pre-sorted starting layout",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:15",
+      "subsystem": "board",
+      "title": "CSV feedback parser",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "server/lib/csv.ts"
+        ],
+        "modify": [],
+        "test": [
+          "server/lib/csv.test.ts"
+        ]
+      },
+      "provides": [
+        "parseFeedbackCsv(input: string): string[]"
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/csv.test.ts",
+        "expect": "PASS — `Tests  5 passed (5)`"
+      },
+      "commit": "feat: add the RFC 4180 feedback CSV parser",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:16",
+      "subsystem": "board",
+      "title": "Board store (snapshot, positions, ownership)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "server/lib/board-store.ts"
+        ],
+        "modify": [],
+        "test": [
+          "server/lib/board-store.test.ts"
+        ]
+      },
+      "provides": [
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "nextClusterPosition(ownerEmail: string): Promise<number>",
+        "frontClusterPosition(ownerEmail: string): Promise<number>",
+        "nextNotePosition(ownerEmail: string, clusterId: string | null): Promise<number>",
+        "getOwnedCluster(ownerEmail: string, clusterId: string): Promise<ClusterRow>",
+        "getOwnedClusters(ownerEmail: string, clusterIds: string[]): Promise<ClusterRow[]>",
+        "getOwnedNotes(ownerEmail: string, noteIds: string[]): Promise<NoteRow[]>",
+        "countNotes(ownerEmail: string): Promise<{ total: number; sample: number }>",
+        "clipText(text: string, max: number): string"
+      ],
+      "requires": [
+        "getDb(): PgDatabase (typed with schema)",
+        "schema.stigiClusters",
+        "schema.stigiNotes",
+        "resetTestDb(): Promise<void>",
+        "type BoardSnapshot"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/board-store.test.ts",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add the board store (snapshot, positions, ownership checks)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:17",
+      "subsystem": "board",
+      "title": "`import-notes` action (pre-sorted sample + CSV)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:14",
+        "board:15",
+        "board:16"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/import-notes.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/import-notes.test.ts"
+        ]
+      },
+      "provides": [
+        "action import-notes { csv?: string; sample?: boolean }"
+      ],
+      "requires": [
+        "SAMPLE_FEEDBACK: readonly SampleFeedback[] (200 labeled sample notes)",
+        "SAMPLE_START_CLUSTERS (6 starting cluster names)",
+        "parseFeedbackCsv(input: string): string[]",
+        "countNotes(ownerEmail: string): Promise<{ total: number; sample: number }>",
+        "nextClusterPosition(ownerEmail: string): Promise<number>",
+        "nextNotePosition(ownerEmail: string, clusterId: string | null): Promise<number>",
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "requireOwner(ctx: OwnerContext | undefined): string"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/import-notes.test.ts",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add import-notes (pre-sorted labeled sample and CSV)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:18",
+      "subsystem": "board",
+      "title": "`get-board` action",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [
+          "actions/get-board.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/get-board.test.ts"
+        ]
+      },
+      "provides": [
+        "action get-board {} -> BoardSnapshot"
+      ],
+      "requires": [
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "action import-notes { csv?: string; sample?: boolean }"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/get-board.test.ts",
+        "expect": "PASS — `Tests  2 passed (2)`"
+      },
+      "commit": "feat: add the get-board read action",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:19",
+      "subsystem": "board",
+      "title": "`create-cluster` and `rename-cluster` actions",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/create-cluster.ts",
+          "actions/rename-cluster.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/create-cluster.test.ts",
+          "actions/rename-cluster.test.ts"
+        ]
+      },
+      "provides": [
+        "action create-cluster { name?: string; noteIds?: string[] } -> { id, name, message }",
+        "action rename-cluster { clusterId: string; name: string }"
+      ],
+      "requires": [
+        "frontClusterPosition(ownerEmail: string): Promise<number>",
+        "getOwnedCluster(ownerEmail: string, clusterId: string): Promise<ClusterRow>",
+        "getOwnedNotes(ownerEmail: string, noteIds: string[]): Promise<NoteRow[]>",
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "actorFromCtx(ctx: CallerContext | undefined): Actor",
+        "action import-notes { csv?: string; sample?: boolean }"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/create-cluster.test.ts actions/rename-cluster.test.ts",
+        "expect": "PASS — `Test Files  2 passed (2)`"
+      },
+      "commit": "feat: add create-cluster (newest first) and rename-cluster actions",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:20",
+      "subsystem": "board",
+      "title": "`move-notes` action (reasons required for the agent)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17",
+        "board:19"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/move-notes.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/move-notes.test.ts"
+        ]
+      },
+      "provides": [
+        "action move-notes { moves: { noteId: string; clusterId: string | null; reason?: string }[] }"
+      ],
+      "requires": [
+        "getOwnedNotes(ownerEmail: string, noteIds: string[]): Promise<NoteRow[]>",
+        "getOwnedClusters(ownerEmail: string, clusterIds: string[]): Promise<ClusterRow[]>",
+        "nextNotePosition(ownerEmail: string, clusterId: string | null): Promise<number>",
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "actorFromCtx(ctx: CallerContext | undefined): Actor",
+        "action create-cluster { name?: string; noteIds?: string[] } -> { id, name, message }",
+        "action import-notes { csv?: string; sample?: boolean }"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/move-notes.test.ts",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add move-notes with required agent reasons",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:21",
+      "subsystem": "board",
+      "title": "`list-notes` action (the agent's compact read)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17",
+        "board:19"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/list-notes.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/list-notes.test.ts"
+        ]
+      },
+      "provides": [
+        "action list-notes { scope, clusterId?, limit, offset } -> { total, notes: { id, text, cluster }[], nextOffset }"
+      ],
+      "requires": [
+        "getOwnedCluster(ownerEmail: string, clusterId: string): Promise<ClusterRow>",
+        "clipText(text: string, max: number): string",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "action import-notes { csv?: string; sample?: boolean }",
+        "action create-cluster { name?: string; noteIds?: string[] } -> { id, name, message }"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/list-notes.test.ts",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add the agent's compact list-notes action",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:22",
+      "subsystem": "board",
+      "title": "`view-screen` — the agent's eyes on the board",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17",
+        "board:18"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [],
+        "modify": [
+          "actions/view-screen.ts"
+        ],
+        "test": [
+          "actions/view-screen.test.ts"
+        ]
+      },
+      "provides": [
+        "action view-screen {} -> { navigation, selection, board, selectedNotes, selectedCluster }"
+      ],
+      "requires": [
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "clipText(text: string, max: number): string",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "action import-notes { csv?: string; sample?: boolean }",
+        "action get-board {} -> BoardSnapshot"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/view-screen.test.ts",
+        "expect": "PASS — `Tests  2 passed (2)`"
+      },
+      "commit": "feat: extend view-screen with board, selection and selected notes",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:23",
+      "subsystem": "board",
+      "title": "Daily agent-turn cap and `get-agent-usage`",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "shared/agent-limits.ts",
+          "server/lib/agent-usage.ts",
+          "actions/get-agent-usage.ts"
+        ],
+        "modify": [],
+        "test": [
+          "server/lib/agent-usage.test.ts"
+        ]
+      },
+      "provides": [
+        "guardAgentTurn(details: { ownerEmail: string | null; internalContinuation: boolean }, now?: Date): Promise<void>",
+        "readAgentUsage(ownerEmail: string, now?: Date): Promise<AgentUsage>",
+        "dailyLimitMessage(limit: number): string",
+        "DEFAULT_DAILY_AGENT_TURNS = 40",
+        "action get-agent-usage {} -> AgentUsage & { id, message }"
+      ],
+      "requires": [
+        "getDb(): PgDatabase (typed with schema)",
+        "schema.stigiAgentTurns",
+        "resetTestDb(): Promise<void>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "type AgentUsage"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/agent-usage.test.ts",
+        "expect": "PASS — `Tests  5 passed (5)`"
+      },
+      "commit": "feat: add the per-user daily agent-turn cap and get-agent-usage",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:24",
+      "subsystem": "board",
+      "title": "Agent-chat plugin — Stigi system prompt, starter tools and the cap guard",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "board:20",
+        "board:21",
+        "board:22",
+        "board:23"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [],
+        "modify": [
+          "server/plugins/agent-chat.ts"
+        ],
+        "test": []
+      },
+      "provides": [
+        "agent-chat plugin: Stigi system prompt, INITIAL_TOOL_NAMES, prepareRequest daily-cap guard"
+      ],
+      "requires": [
+        "guardAgentTurn(details: { ownerEmail: string | null; internalContinuation: boolean }, now?: Date): Promise<void>",
+        "action move-notes { moves: { noteId: string; clusterId: string | null; reason?: string }[] }",
+        "action list-notes { scope, clusterId?, limit, offset } -> { total, notes: { id, text, cluster }[], nextOffset }",
+        "action view-screen {} -> { navigation, selection, board, selectedNotes, selectedCluster }"
+      ],
+      "gate": {
+        "run": "pnpm typecheck && echo AGENT_PLUGIN_OK",
+        "expect": "`AGENT_PLUGIN_OK`"
+      },
+      "commit": "feat: give the agent Stigi's system prompt, starter tools and the daily-cap guard",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:25",
+      "subsystem": "board",
+      "title": "`AGENTS.md` Stigi section and the `teach-cluster` skill",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          ".agents/skills/teach-cluster/SKILL.md"
+        ],
+        "modify": [
+          "AGENTS.md"
+        ],
+        "test": [
+          "server/lib/agent-instructions.test.ts"
+        ]
+      },
+      "provides": [
+        "AGENTS.md Stigi section",
+        ".agents/skills/teach-cluster/SKILL.md"
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/agent-instructions.test.ts",
+        "expect": "PASS — `Tests  2 passed (2)`"
+      },
+      "commit": "feat: teach the agent Stigi's invariants and the teach-cluster skill",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:26",
+      "subsystem": "board",
+      "title": "UI dependencies and the design tokens / board stylesheet",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:1"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [
+          "app/styles/stigi-tokens.css",
+          "app/styles/board.css"
+        ],
+        "modify": [
+          "package.json",
+          "pnpm-lock.yaml"
+        ],
+        "test": [
+          "app/styles/styles.test.ts"
+        ]
+      },
+      "provides": [
+        "app/styles/stigi-tokens.css (olive-on-bone, Host Grotesk + JetBrains Mono, scoped .stigi-route/.stigi)",
+        "app/styles/board.css",
+        "deps: @dnd-kit/core 6.3.1, motion 14.10.1, @testing-library/react 16.3.3, @testing-library/dom 10.4.2"
+      ],
+      "requires": [
+        "@agent-native/core 0.226.0 chat-template app at repo root"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/styles/styles.test.ts",
+        "expect": "PASS — `Tests  3 passed (3)`"
+      },
+      "commit": "feat: add UI dependencies, Stigi design tokens and the board stylesheet",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:27",
+      "subsystem": "board",
+      "title": "Pure board logic — auto-teach rule, agent-move diff, handoffs, drop targets",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/lib/board/auto-teach.ts",
+          "app/lib/board/agent-moves.ts",
+          "app/lib/board/handoff.ts",
+          "app/lib/board/drop-target.ts"
+        ],
+        "modify": [],
+        "test": [
+          "app/lib/board/board-logic.test.ts"
+        ]
+      },
+      "provides": [
+        "findAutoTeachCluster(board: BoardSnapshot, firedIds: ReadonlySet<string>): BoardCluster | null",
+        "diffAgentMoves(prev: BoardSnapshot | null, next: BoardSnapshot): string[]",
+        "allNotes(board: BoardSnapshot): BoardNote[]",
+        "buildTeachHandoff(cluster: Pick<BoardCluster, \"id\" | \"notes\">): Handoff",
+        "buildSortHandoff(): Handoff",
+        "buildReportHandoff(): Handoff",
+        "resolveDrop(noteId: string, currentClusterId: string | null, overId: string | null): DropAction",
+        "noteDragId(noteId: string): string",
+        "noteIdFromDragId(dragId: string): string",
+        "clusterDropId(clusterId: string): string",
+        "UNSORTED_DROP_ID = \"drop:unsorted\"",
+        "NEW_CLUSTER_DROP_ID = \"drop:new-cluster\""
+      ],
+      "requires": [
+        "type BoardNote",
+        "type BoardCluster",
+        "type BoardSnapshot"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/lib/board/board-logic.test.ts",
+        "expect": "PASS — `Tests  6 passed (6)`"
+      },
+      "commit": "feat: add pure board logic (auto-teach rule, agent-move diff, handoffs, drop targets)",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:28",
+      "subsystem": "board",
+      "title": "`NoteCard` component",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:26",
+        "board:27"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/components/board/NoteCard.tsx"
+        ],
+        "modify": [],
+        "test": [
+          "app/components/board/NoteCard.test.tsx"
+        ]
+      },
+      "provides": [
+        "<NoteCard note selected highlighted onToggleSelect />"
+      ],
+      "requires": [
+        "type BoardNote",
+        "noteDragId(noteId: string): string",
+        "deps: @dnd-kit/core 6.3.1, motion 14.10.1, @testing-library/react 16.3.3, @testing-library/dom 10.4.2",
+        "app/styles/board.css"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/components/board/NoteCard.test.tsx",
+        "expect": "PASS — `Tests  3 passed (3)`"
+      },
+      "commit": "feat: add the draggable, animated NoteCard",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:29",
+      "subsystem": "board",
+      "title": "`ClusterColumn`, `NewClusterZone` and `ClusterMenu`",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:27",
+        "board:28"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/components/board/ClusterColumn.tsx",
+          "app/components/board/NewClusterZone.tsx",
+          "app/components/board/ClusterMenu.tsx"
+        ],
+        "modify": [],
+        "test": [
+          "app/components/board/ClusterColumn.test.tsx"
+        ]
+      },
+      "provides": [
+        "<ClusterColumn dropId clusterId title untitled notes selectedIds highlightedIds onToggleSelect actions />",
+        "<NewClusterZone />",
+        "<ClusterMenu clusterName agentDisabled onMoreLikeThese onRename mergeTargets onMerge onDelete />"
+      ],
+      "requires": [
+        "<NoteCard note selected highlighted onToggleSelect />",
+        "NEW_CLUSTER_DROP_ID = \"drop:new-cluster\"",
+        "type BoardNote"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/components/board/ClusterColumn.test.tsx",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add ClusterColumn, NewClusterZone and ClusterMenu",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:30",
+      "subsystem": "board",
+      "title": "`EmptyBoard`, `BoardTopBar` and `SelectionBar`",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:2",
+        "board:14",
+        "board:23",
+        "board:26"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/components/board/EmptyBoard.tsx",
+          "app/components/board/BoardTopBar.tsx",
+          "app/components/board/SelectionBar.tsx"
+        ],
+        "modify": [],
+        "test": [
+          "app/components/board/BoardChrome.test.tsx"
+        ]
+      },
+      "provides": [
+        "<EmptyBoard loading onLoadSample onImportCsv />",
+        "<BoardTopBar totalNotes themeCount unsortedCount sampleNotes usage agentRunning autoTeach onAutoTeachChange sorting onSortToggle onImportCsv onOpenReport onResetBoard />",
+        "<SelectionBar count canTeach onMoreLikeThese onClear />"
+      ],
+      "requires": [
+        "SAMPLE_LABEL = \"Sample data · pre-sorted starting layout\"",
+        "dailyLimitMessage(limit: number): string",
+        "type AgentUsage",
+        "app/styles/board.css"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/components/board/BoardChrome.test.tsx",
+        "expect": "PASS — `Tests  7 passed (7)`"
+      },
+      "commit": "feat: add the first-run EmptyBoard, the board top bar and the selection bar",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:31",
+      "subsystem": "board",
+      "title": "`BoardPage` — live board, drag-and-drop, glide-in, selection app-state, auto-teach",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "foundation:3",
+        "board:17",
+        "board:18",
+        "board:19",
+        "board:20",
+        "board:23",
+        "board:27",
+        "board:29",
+        "board:30"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "app/components/board/BoardPage.tsx"
+        ],
+        "modify": [
+          "app/routes/board.tsx"
+        ],
+        "test": []
+      },
+      "provides": [
+        "<BoardPage /> (data-agent-state, 2 s polling while the agent runs, DnD, glide-in, selection app-state, auto-teach)",
+        "app/routes/board.tsx renders BoardPage + Outlet with fonts and styles"
+      ],
+      "requires": [
+        "action import-notes { csv?: string; sample?: boolean }",
+        "action get-board {} -> BoardSnapshot",
+        "action create-cluster { name?: string; noteIds?: string[] } -> { id, name, message }",
+        "action rename-cluster { clusterId: string; name: string }",
+        "action move-notes { moves: { noteId: string; clusterId: string | null; reason?: string }[] }",
+        "action get-agent-usage {} -> AgentUsage & { id, message }",
+        "dailyLimitMessage(limit: number): string",
+        "findAutoTeachCluster(board: BoardSnapshot, firedIds: ReadonlySet<string>): BoardCluster | null",
+        "diffAgentMoves(prev: BoardSnapshot | null, next: BoardSnapshot): string[]",
+        "allNotes(board: BoardSnapshot): BoardNote[]",
+        "buildTeachHandoff(cluster: Pick<BoardCluster, \"id\" | \"notes\">): Handoff",
+        "resolveDrop(noteId: string, currentClusterId: string | null, overId: string | null): DropAction",
+        "noteIdFromDragId(dragId: string): string",
+        "clusterDropId(clusterId: string): string",
+        "<ClusterColumn dropId clusterId title untitled notes selectedIds highlightedIds onToggleSelect actions />",
+        "<NewClusterZone />",
+        "<ClusterMenu clusterName agentDisabled onMoreLikeThese onRename mergeTargets onMerge onDelete />",
+        "<EmptyBoard loading onLoadSample onImportCsv />",
+        "<BoardTopBar totalNotes themeCount unsortedCount sampleNotes usage agentRunning autoTeach onAutoTeachChange sorting onSortToggle onImportCsv onOpenReport onResetBoard />",
+        "<SelectionBar count canTeach onMoreLikeThese onClear />",
+        "/board route shell with h1 \"Feedback board\""
+      ],
+      "gate": {
+        "run": "pnpm typecheck && pnpm vitest run app/lib/board app/components/board && echo BOARD_PAGE_OK",
+        "expect": "`Test Files  4 passed (4)` then `BOARD_PAGE_OK`"
+      },
+      "commit": "feat: add the live board page with drag-and-drop, glide-in and auto-teach",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:32",
+      "subsystem": "board",
+      "title": "Board drag-and-drop e2e (no LLM key)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "deploy:9",
+        "board:31"
+      ],
+      "effort": "high",
+      "files": {
+        "create": [
+          "e2e/helpers/board.ts",
+          "e2e/board-dnd.spec.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "e2e/helpers/board.ts (openFreshBoard, loadSample, noteByText, column, dragTo, agentState)",
+        "e2e/board-dnd.spec.ts (2 tests, no LLM key)"
+      ],
+      "requires": [
+        "signUpAndSignIn(page: Page, baseURL: string): Promise<TestAccount>",
+        "playwright projects \"local\" (dev server :8080) and \"deployed\" (STIGI_E2E_TARGET=deployed, e2e/production-url.txt)",
+        "<BoardPage /> (data-agent-state, 2 s polling while the agent runs, DnD, glide-in, selection app-state, auto-teach)"
+      ],
+      "gate": {
+        "run": "pnpm exec playwright test e2e/board-dnd.spec.ts --project=local",
+        "expect": "PASS — `2 passed`"
+      },
+      "commit": "test: add the no-key board drag-and-drop e2e",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "board:33",
+      "subsystem": "board",
+      "title": "Live money-shot e2e (needs `OPENROUTER_API_KEY`)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-board.md",
+      "depends_on": [
+        "board:24",
+        "board:25",
+        "board:32"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "e2e/money-shot.spec.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "e2e/money-shot.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)"
+      ],
+      "requires": [
+        "e2e/helpers/board.ts (openFreshBoard, loadSample, noteByText, column, dragTo, agentState)",
+        "agent-chat plugin: Stigi system prompt, INITIAL_TOOL_NAMES, prepareRequest daily-cap guard",
+        ".agents/skills/teach-cluster/SKILL.md"
+      ],
+      "gate": {
+        "run": "pnpm exec playwright test e2e/money-shot.spec.ts --project=local",
+        "expect": "exit code 0 — `1 passed` (or `1 flaky` if the one allowed retry was used). Two misses of the 35 s budget → set `AGENT_MODEL=anthropic/claude-haiku-5.5` in `.env` and re-run; never change the flow."
+      },
+      "commit": "test: add the live money-shot e2e with the 35 s turn budget",
+      "human_gate": true,
+      "gate_profile": "secret",
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:34",
+      "subsystem": "sort-report",
+      "title": "`sort-feedback` and `write-report` skills",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:25"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          ".agents/skills/sort-feedback/SKILL.md",
+          ".agents/skills/write-report/SKILL.md"
+        ],
+        "modify": [],
+        "test": [
+          "server/lib/agent-skills.test.ts"
+        ]
+      },
+      "provides": [
+        ".agents/skills/sort-feedback/SKILL.md",
+        ".agents/skills/write-report/SKILL.md"
+      ],
+      "requires": [
+        "AGENTS.md Stigi section"
+      ],
+      "gate": {
+        "run": "pnpm vitest run server/lib/agent-skills.test.ts",
+        "expect": "PASS — `Tests  2 passed (2)`"
+      },
+      "commit": "feat: add the sort-feedback and write-report agent skills",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:35",
+      "subsystem": "sort-report",
+      "title": "\"Sort with agent\" loop",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:27",
+        "board:31",
+        "sort-report:34"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/lib/board/sort-loop.ts"
+        ],
+        "modify": [
+          "app/components/board/BoardPage.tsx"
+        ],
+        "test": [
+          "app/lib/board/sort-loop.test.ts"
+        ]
+      },
+      "provides": [
+        "nextSortStep(state: SortLoopState): SortLoopStep",
+        "BoardPage \"Sort with agent\" / \"Stop sorting\" loop (one batch per turn)"
+      ],
+      "requires": [
+        "<BoardPage /> (data-agent-state, 2 s polling while the agent runs, DnD, glide-in, selection app-state, auto-teach)",
+        "buildSortHandoff(): Handoff",
+        ".agents/skills/sort-feedback/SKILL.md"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/lib/board/sort-loop.test.ts && pnpm typecheck && echo SORT_LOOP_OK",
+        "expect": "PASS — `Tests  3 passed (3)` then `SORT_LOOP_OK`"
+      },
+      "commit": "feat: add the batched \"Sort with agent\" loop",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:36",
+      "subsystem": "sort-report",
+      "title": "Live sort-batch e2e (needs `OPENROUTER_API_KEY`)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:32",
+        "board:33",
+        "sort-report:35"
+      ],
+      "effort": "high",
+      "model_tier": "top",
+      "files": {
+        "create": [
+          "e2e/sort-batch.spec.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "e2e/sort-batch.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)"
+      ],
+      "requires": [
+        "e2e/helpers/board.ts (openFreshBoard, loadSample, noteByText, column, dragTo, agentState)",
+        "BoardPage \"Sort with agent\" / \"Stop sorting\" loop (one batch per turn)",
+        "e2e/money-shot.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)"
+      ],
+      "gate": {
+        "run": "pnpm exec playwright test e2e/sort-batch.spec.ts --project=local",
+        "expect": "exit code 0 — `1 passed` (or `1 flaky` if the one allowed retry was used). Two misses of 35 s → apply the timing flake rule."
+      },
+      "commit": "test: add the live one-batch sort e2e with the 35 s turn budget",
+      "human_gate": true,
+      "gate_profile": "secret",
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:37",
+      "subsystem": "sort-report",
+      "title": "`merge-clusters`, `delete-cluster` and `reset-board` actions",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17",
+        "board:19",
+        "board:20"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/merge-clusters.ts",
+          "actions/delete-cluster.ts",
+          "actions/reset-board.ts"
+        ],
+        "modify": [],
+        "test": [
+          "actions/cluster-maintenance.test.ts"
+        ]
+      },
+      "provides": [
+        "action merge-clusters { sourceClusterId: string; targetClusterId: string }",
+        "action delete-cluster { clusterId: string }",
+        "action reset-board {} (UI only)"
+      ],
+      "requires": [
+        "getOwnedCluster(ownerEmail: string, clusterId: string): Promise<ClusterRow>",
+        "nextNotePosition(ownerEmail: string, clusterId: string | null): Promise<number>",
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "actorFromCtx(ctx: CallerContext | undefined): Actor",
+        "action create-cluster { name?: string; noteIds?: string[] } -> { id, name, message }",
+        "action move-notes { moves: { noteId: string; clusterId: string | null; reason?: string }[] }",
+        "action import-notes { csv?: string; sample?: boolean }",
+        "resetTestDb(): Promise<void>",
+        "getDb(): PgDatabase (typed with schema)",
+        "schema.stigiReports"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/cluster-maintenance.test.ts",
+        "expect": "PASS — `Tests  4 passed (4)`"
+      },
+      "commit": "feat: add merge-clusters, delete-cluster and reset-board actions",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:38",
+      "subsystem": "sort-report",
+      "title": "Wire merge, delete and reset into the board",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "sort-report:35",
+        "sort-report:37"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [],
+        "modify": [
+          "app/components/board/BoardPage.tsx"
+        ],
+        "test": []
+      },
+      "provides": [
+        "BoardPage wires merge/delete (ClusterMenu) and reset (top bar)"
+      ],
+      "requires": [
+        "action merge-clusters { sourceClusterId: string; targetClusterId: string }",
+        "action delete-cluster { clusterId: string }",
+        "action reset-board {} (UI only)",
+        "BoardPage \"Sort with agent\" / \"Stop sorting\" loop (one batch per turn)"
+      ],
+      "gate": {
+        "run": "pnpm typecheck && pnpm vitest run app/components/board && echo BOARD_MAINTENANCE_OK",
+        "expect": "`Test Files  3 passed (3)` then `BOARD_MAINTENANCE_OK`"
+      },
+      "commit": "feat: wire merge, delete and reset into the board UI",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:39",
+      "subsystem": "sort-report",
+      "title": "Report actions — `get-board-digest`, `get-report`, `save-report`",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "foundation:2",
+        "board:16",
+        "board:17",
+        "board:24",
+        "sort-report:37"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "actions/get-board-digest.ts",
+          "actions/get-report.ts",
+          "actions/save-report.ts"
+        ],
+        "modify": [
+          "server/plugins/agent-chat.ts"
+        ],
+        "test": [
+          "actions/report.test.ts"
+        ]
+      },
+      "provides": [
+        "action get-board-digest {} -> { totalNotes, unsortedCount, sampleNotes, themes[] }",
+        "action get-report {} -> { markdown, updatedBy, updatedAt }",
+        "action save-report { markdown: string }"
+      ],
+      "requires": [
+        "loadBoard(ownerEmail: string): Promise<BoardSnapshot>",
+        "clipText(text: string, max: number): string",
+        "requireOwner(ctx: OwnerContext | undefined): string",
+        "actorFromCtx(ctx: CallerContext | undefined): Actor",
+        "agent-chat plugin: Stigi system prompt, INITIAL_TOOL_NAMES, prepareRequest daily-cap guard",
+        "action merge-clusters { sourceClusterId: string; targetClusterId: string }",
+        "action import-notes { csv?: string; sample?: boolean }",
+        "resetTestDb(): Promise<void>",
+        "getDb(): PgDatabase (typed with schema)",
+        "schema.stigiReports"
+      ],
+      "gate": {
+        "run": "pnpm vitest run actions/report.test.ts && pnpm typecheck && echo REPORT_ACTIONS_OK",
+        "expect": "PASS — `Tests  3 passed (3)` then `REPORT_ACTIONS_OK`"
+      },
+      "commit": "feat: add the report digest, get-report and save-report actions",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:40",
+      "subsystem": "sort-report",
+      "title": "Report pane with Markdown export",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:23",
+        "board:27",
+        "board:31",
+        "sort-report:38",
+        "sort-report:39"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/lib/board/report-export.ts",
+          "app/components/board/ReportPane.tsx",
+          "app/routes/board.report.tsx"
+        ],
+        "modify": [
+          "app/components/board/BoardPage.tsx"
+        ],
+        "test": [
+          "app/lib/board/report-export.test.ts"
+        ]
+      },
+      "provides": [
+        "reportFileName(date: Date): string",
+        "downloadMarkdown(markdown: string, fileName: string): void",
+        "<ReportPane /> at /board/report (edit, save, write with agent, export .md)"
+      ],
+      "requires": [
+        "action get-report {} -> { markdown, updatedBy, updatedAt }",
+        "action save-report { markdown: string }",
+        "action get-agent-usage {} -> AgentUsage & { id, message }",
+        "buildReportHandoff(): Handoff",
+        "dailyLimitMessage(limit: number): string",
+        "BoardPage wires merge/delete (ClusterMenu) and reset (top bar)",
+        "app/routes/board.tsx renders BoardPage + Outlet with fonts and styles"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/lib/board/report-export.test.ts && pnpm typecheck && echo REPORT_PANE_OK",
+        "expect": "PASS — `Tests  2 passed (2)` then `REPORT_PANE_OK`"
+      },
+      "commit": "feat: add the editable insight report pane with Markdown export",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:41",
+      "subsystem": "sort-report",
+      "title": "CSV import dialog",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:17",
+        "sort-report:40"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "app/components/board/ImportCsvDialog.tsx"
+        ],
+        "modify": [
+          "app/components/board/BoardPage.tsx"
+        ],
+        "test": [
+          "app/components/board/ImportCsvDialog.test.tsx"
+        ]
+      },
+      "provides": [
+        "<ImportCsvDialog open onClose onImport />",
+        "BoardPage wires CSV import (top bar + empty board)"
+      ],
+      "requires": [
+        "action import-notes { csv?: string; sample?: boolean }",
+        "<ReportPane /> at /board/report (edit, save, write with agent, export .md)"
+      ],
+      "gate": {
+        "run": "pnpm vitest run app/components/board/ImportCsvDialog.test.tsx && pnpm typecheck && echo CSV_DIALOG_OK",
+        "expect": "PASS — `Tests  3 passed (3)` then `CSV_DIALOG_OK`"
+      },
+      "commit": "feat: add the CSV import dialog",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "sort-report:42",
+      "subsystem": "sort-report",
+      "title": "Report export e2e (no LLM key)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-sort-report.md",
+      "depends_on": [
+        "board:32",
+        "sort-report:40",
+        "sort-report:41"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "e2e/report-export.spec.ts"
+        ],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "e2e/report-export.spec.ts"
+      ],
+      "requires": [
+        "e2e/helpers/board.ts (openFreshBoard, loadSample, noteByText, column, dragTo, agentState)",
+        "<ReportPane /> at /board/report (edit, save, write with agent, export .md)",
+        "BoardPage wires CSV import (top bar + empty board)"
+      ],
+      "gate": {
+        "run": "pnpm exec playwright test e2e/report-export.spec.ts --project=local",
+        "expect": "PASS — `1 passed`"
+      },
+      "commit": "test: add the report edit-save-export e2e",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "ship:43",
+      "subsystem": "ship",
+      "title": "README (`R1-web-app v1`) and LICENSE",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-ship.md",
+      "depends_on": [
+        "sort-report:36",
+        "sort-report:42"
+      ],
+      "effort": "medium",
+      "files": {
+        "create": [
+          "LICENSE"
+        ],
+        "modify": [
+          "README.md"
+        ],
+        "test": []
+      },
+      "provides": [
+        "README.md (R1-web-app v1, TBD-post-build lines for demo video, live URL, screenshot)",
+        "LICENSE (MIT)"
+      ],
+      "requires": [
+        "e2e/sort-batch.spec.ts (live, TURN_BUDGET_MS=35000, retries 1)",
+        "e2e/report-export.spec.ts"
+      ],
+      "gate": {
+        "run": "powershell -NoProfile -Command '$want = @(\"# Stigi\",\"## Demo\",\"## What it does\",\"## Quickstart\",\"## Built at Agent-Native Hackathon (Builder.io)\",\"## How it works\",\"## Tech stack\",\"## Run locally\",\"## Roadmap\",\"## License\"); $stamp = \"<!-- readme-schema: R1-web-app v1 -->\"; $fence = [string]([char]96) * 3; $lines = Get-Content README.md -Encoding UTF8; $inFence = $false; $got = foreach ($l in $lines) { if ($l.StartsWith($fence)) { $inFence = -not $inFence } elseif (-not $inFence -and $l -cmatch \"^#{1,2} \") { $l } }; $ok = ($got.Count -eq $want.Count); if ($ok) { for ($i = 0; $i -lt $want.Count; $i++) { if ($got[$i] -cne $want[$i]) { $ok = $false } } }; if ($ok -and ($lines[0] -ceq $stamp)) { \"PASS\" } else { \"FAIL\" }'",
+        "expect": "`PASS`"
+      },
+      "commit": "docs: add the R1-web-app README and MIT license",
+      "human_gate": false,
+      "allow_empty": false,
+      "status": "pending"
+    },
+    {
+      "id": "ship:44",
+      "subsystem": "ship",
+      "title": "Final local verification (verification only)",
+      "plan": "docs/superpowers/plans/2026-11-09-stigi-ship.md",
+      "depends_on": [
+        "deploy:7",
+        "deploy:8",
+        "board:33",
+        "sort-report:36",
+        "sort-report:38",
+        "sort-report:41",
+        "sort-report:42",
+        "ship:43"
+      ],
+      "effort": "low",
+      "files": {
+        "create": [],
+        "modify": [],
+        "test": []
+      },
+      "provides": [
+        "final local verification: vitest + typecheck + build green"
+      ],
+      "requires": [
+        "README.md (R1-web-app v1, TBD-post-build lines for demo video, live URL, screenshot)",
+        "node scripts/check-vercel-output.mjs -> VERCEL_OUTPUT_OK"
+      ],
+      "gate": {
+        "run": "pnpm vitest run && pnpm typecheck && pnpm build",
+        "expect": "Vitest reports every test file passed (no failures), typecheck exits 0, and the build ends with `Build complete.`"
+      },
+      "commit": "chore: final local verification green (no file changes)",
+      "human_gate": false,
+      "allow_empty": true,
+      "status": "pending"
+    }
+  ]
+}
