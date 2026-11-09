@@ -412,7 +412,8 @@
         ],
         "modify": [
           "package.json",
-          "pnpm-lock.yaml"
+          "pnpm-lock.yaml",
+          ".gitignore"
         ],
         "test": []
       },

@@ -492,6 +492,7 @@ Verified 2026-11-09 against core 0.226.0 / Nitro `3.0.260903-beta`: with this co
 **Files:**
 - Modify: `package.json`
 - Modify: `pnpm-lock.yaml`
+- Modify: `.gitignore`
 - Create: `playwright.config.ts`
 - Create: `e2e/helpers/auth.ts`
 - Create: `e2e/deploy-skeleton.spec.ts`
@@ -564,6 +565,13 @@ Verified 2026-11-09 against core 0.226.0 / Nitro `3.0.260903-beta`: with this co
       "e2e": "playwright test --project=local",
       "e2e:deployed": "STIGI_E2E_TARGET=deployed playwright test --project=deployed"
       ```
+      Append to the end of `.gitignore` (Playwright's run output must never be committed):
+      ```gitignore
+
+      # Playwright run output
+      test-results/
+      playwright-report/
+      ```
 
 - [ ] **Step 3: Write the auth helper**
       Create `e2e/helpers/auth.ts` (signs up a fresh account per run through the framework's `POST /_agent-native/auth/register` + `/login`; no credentials are stored anywhere):
@@ -602,7 +610,7 @@ Verified 2026-11-09 against core 0.226.0 / Nitro `3.0.260903-beta`: with this co
       test.describe("deploy skeleton", () => {
         test("signed-out visitors meet the sign-in wall, not the board @auth", async ({ page }) => {
           await page.goto("/board");
-          await expect(page.locator('input[type="email"]').first()).toBeVisible();
+          await expect(page.locator('input[type="email"]:visible').first()).toBeVisible();
           await expect(page.getByRole("heading", { name: "Feedback board" })).toHaveCount(0);
         });
 

@@ -172,7 +172,7 @@ export { default } from "./[...page].get";
 
       test("a signed-out visit to /board still lands on the sign-in screen", async ({ page }) => {
         await page.goto("/board");
-        await expect(page.locator('input[type="email"]').first()).toBeVisible();
+        await expect(page.locator('input[type="email"]:visible').first()).toBeVisible();
         await expect(page.getByRole("heading", { name: "Feedback board" })).toHaveCount(0);
       });
       ```
