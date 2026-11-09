@@ -37,7 +37,7 @@ import { ImportCsvDialog } from "./ImportCsvDialog";
 import { NewClusterZone } from "./NewClusterZone";
 import { SelectionBar } from "./SelectionBar";
 
-export const AGENT_POLL_MS = 2_000;
+export const AGENT_POLL_MS = 750;
 export const HIGHLIGHT_MS = 6_000;
 const AUTO_TEACH_STORAGE_KEY = "stigi.autoTeach";
 
