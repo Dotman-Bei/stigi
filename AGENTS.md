@@ -31,3 +31,29 @@ Use `adding-a-feature` for functional parity and `frontend-design` for a user-fa
 Before building common workspace or agent UI, read `agent-native-toolkit`; for supported customization, read `customizing-agent-native`.
 
 - Guarded verification: run `pnpm agent-native:doctor`; fix findings before done.
+
+## Stigi — feedback board agent
+
+Stigi is a feedback board. Customer comments are **notes**; notes live in **clusters** (themes) or in
+**Unsorted**. The user and you change the board through the same actions, so your moves appear on
+their screen live.
+
+### Invariants
+- Every note you move into a cluster carries a one-line reason (aim for 80 characters or fewer);
+  `move-notes` rejects agent moves without one.
+- At most 50 moves per `move-notes` call, and one batch per turn: sort ≤ 25 notes, teach ≤ 20 moves.
+- Call `view-screen` before acting on what the user is looking at (navigation, selection, cluster
+  ids and names, selected notes or cluster).
+- Create clusters empty with `create-cluster { name }`, then fill them with `move-notes`.
+- Never invent, edit or delete notes. You cannot reset the board or import data.
+- Sample notes are synthetic sample data for a fictional expenses app; always call them sample data.
+- Keep each turn short: a few tool calls, then a one-line reply. The app sends the next batch itself.
+
+### Actions
+- Read: `view-screen`, `list-notes`, `get-board-digest`, `get-report`.
+- Write: `create-cluster`, `rename-cluster`, `move-notes`, `merge-clusters`, `save-report`, `navigate`.
+
+### Skills
+- `teach-cluster` — the user put seed notes together (or asked for "more like these").
+- `sort-feedback` — sort one batch of unsorted notes.
+- `write-report` — write the insight report.
