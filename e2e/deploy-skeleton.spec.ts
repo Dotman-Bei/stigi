@@ -18,9 +18,15 @@ test.describe("deploy skeleton", () => {
   test("the platform lets a signed-in request run 45 s and 58 s @probe", async ({ page, baseURL }) => {
     test.setTimeout(240_000);
     await signUpAndSignIn(page, baseURL ?? "");
+    // Node's fetch with the browser session cookie: Playwright's page.request client resets
+    // (ECONNRESET) on long silent waits from this machine, while the platform itself answers.
+    const cookie = (await page.context().cookies(baseURL)).map((c) => `${c.name}=${c.value}`).join("; ");
     for (const ms of [45_000, 58_000]) {
-      const response = await page.request.get(`${baseURL}/api/duration-probe?ms=${ms}`, { timeout: ms + 30_000 });
-      expect(response.status(), `duration probe ${ms} ms`).toBe(200);
+      const response = await fetch(`${baseURL}/api/duration-probe?ms=${ms}`, {
+        headers: { cookie },
+        signal: AbortSignal.timeout(ms + 30_000),
+      });
+      expect(response.status, `duration probe ${ms} ms`).toBe(200);
       const body = (await response.json()) as { ok: boolean; waitedMs: number };
       expect(body.ok).toBe(true);
       expect(body.waitedMs).toBe(ms);
