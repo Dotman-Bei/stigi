@@ -27,7 +27,10 @@ export function BoardTopBar(props: BoardTopBarProps) {
   return (
     <div className="stigi-topbar-wrap">
       <div className="stigi-topbar">
-        <h1 className="stigi-topbar__title">Feedback board</h1>
+        <h1 className="stigi-topbar__title">
+          <img className="stigi-topbar__mark" src="/stigi-mark.svg" alt="" aria-hidden="true" width={24} height={24} />
+          Feedback board
+        </h1>
         {props.sampleNotes > 0 ? <span className="stigi-chip">{SAMPLE_LABEL}</span> : null}
         <span className="stigi-meta">
           {`${props.totalNotes} notes · ${props.themeCount} themes · ${props.unsortedCount} unsorted`}

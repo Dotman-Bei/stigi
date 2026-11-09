@@ -11,7 +11,8 @@
   letter-spacing: var(--display-tracking); margin: 0;
 }
 .stigi-topbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3) var(--s-4); }
-.stigi-topbar__title { font-size: var(--t-h3); }
+.stigi-topbar__title { font-size: var(--t-h3); display: inline-flex; align-items: center; gap: var(--s-2); }
+.stigi-topbar__mark { width: 24px; height: 24px; flex: none; }
 .stigi-topbar__actions { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-2); }
 .stigi-chip {
   display: inline-flex; align-items: center; height: 28px; padding: 0 var(--s-3);
