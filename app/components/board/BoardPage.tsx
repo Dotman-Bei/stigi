@@ -1,0 +1,288 @@
+import {
+  DndContext,
+  DragOverlay,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
+import { useAgentChatGenerating } from "@agent-native/core/client/agent-chat";
+import {
+  actionErrorMessage,
+  setClientAppState,
+  useActionMutation,
+  useActionQuery,
+} from "@agent-native/core/client/hooks";
+import { LayoutGroup, MotionConfig } from "motion/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+
+import { dailyLimitMessage } from "@shared/agent-limits";
+import type { BoardCluster, BoardNote, BoardSnapshot } from "@shared/board-types";
+
+import { allNotes, diffAgentMoves } from "@/lib/board/agent-moves";
+import { findAutoTeachCluster } from "@/lib/board/auto-teach";
+import { UNSORTED_DROP_ID, clusterDropId, noteIdFromDragId, resolveDrop } from "@/lib/board/drop-target";
+import { buildTeachHandoff, type Handoff } from "@/lib/board/handoff";
+
+import { BoardTopBar } from "./BoardTopBar";
+import { ClusterColumn } from "./ClusterColumn";
+import { ClusterMenu } from "./ClusterMenu";
+import { EmptyBoard } from "./EmptyBoard";
+import { NewClusterZone } from "./NewClusterZone";
+import { SelectionBar } from "./SelectionBar";
+
+export const AGENT_POLL_MS = 2_000;
+export const HIGHLIGHT_MS = 6_000;
+const AUTO_TEACH_STORAGE_KEY = "stigi.autoTeach";
+
+function readAutoTeach(): boolean {
+  try {
+    return window.localStorage.getItem(AUTO_TEACH_STORAGE_KEY) !== "0";
+  } catch {
+    return true;
+  }
+}
+
+function writeAutoTeach(value: boolean): void {
+  try {
+    window.localStorage.setItem(AUTO_TEACH_STORAGE_KEY, value ? "1" : "0");
+  } catch {
+    // Storage blocked (private window): the in-memory value still applies for this visit.
+  }
+}
+
+function showError(error: unknown): void {
+  toast.error(actionErrorMessage(error));
+}
+
+export function BoardPage() {
+  const [isGenerating, sendToAgent] = useAgentChatGenerating();
+  const boardQuery = useActionQuery("get-board", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS : false });
+  const usageQuery = useActionQuery("get-agent-usage", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS * 2 : false });
+  const importNotes = useActionMutation("import-notes", { onError: showError });
+  const createCluster = useActionMutation("create-cluster", { onError: showError });
+  const renameCluster = useActionMutation("rename-cluster", { onError: showError });
+  const moveNotes = useActionMutation("move-notes", { onError: showError });
+
+  const board: BoardSnapshot | undefined = boardQuery.data;
+  const usage = usageQuery.data ?? null;
+
+  const [autoTeach, setAutoTeach] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [highlightedIds, setHighlightedIds] = useState<ReadonlySet<string>>(() => new Set());
+  const [activeNote, setActiveNote] = useState<BoardNote | null>(null);
+  const firedRef = useRef<Set<string>>(new Set());
+  const previousBoardRef = useRef<BoardSnapshot | null>(null);
+  const timersRef = useRef<number[]>([]);
+
+  const notesById = useMemo(() => {
+    const map = new Map<string, BoardNote>();
+    if (board) for (const n of allNotes(board)) map.set(n.id, n);
+    return map;
+  }, [board]);
+  const agentBlocked = isGenerating || (usage !== null && usage.remaining <= 0);
+
+  useEffect(() => {
+    setAutoTeach(readAutoTeach());
+  }, []);
+
+  // Selection is app-state the agent reads through view-screen (ids only, spec §7).
+  useEffect(() => {
+    const noteIds = [...selectedIds];
+    void setClientAppState(
+      "selection",
+      noteIds.length > 0 ? { kind: "stigi.board", noteIds, clusterId: null, capturedAt: new Date().toISOString() } : null,
+      { keepalive: true },
+    );
+  }, [selectedIds]);
+
+  // Glide-in highlight: ring the notes the agent just moved for HIGHLIGHT_MS.
+  useEffect(() => {
+    if (!board) return;
+    const moved = diffAgentMoves(previousBoardRef.current, board);
+    previousBoardRef.current = board;
+    if (moved.length === 0) return;
+    setHighlightedIds((prev) => new Set([...prev, ...moved]));
+    const timer = window.setTimeout(() => {
+      setHighlightedIds((prev) => {
+        const next = new Set(prev);
+        for (const id of moved) next.delete(id);
+        return next;
+      });
+    }, HIGHLIGHT_MS);
+    timersRef.current.push(timer);
+  }, [board]);
+
+  useEffect(() => () => {
+    for (const timer of timersRef.current) window.clearTimeout(timer);
+  }, []);
+
+  async function hasCredits(): Promise<boolean> {
+    const latest = (await usageQuery.refetch()).data;
+    if (latest && latest.remaining <= 0) {
+      toast.error(dailyLimitMessage(latest.limit));
+      return false;
+    }
+    return true;
+  }
+
+  function handOff(handoff: Handoff): void {
+    sendToAgent({ message: handoff.message, context: handoff.context, submit: true, openSidebar: true });
+  }
+
+  async function teach(cluster: Pick<BoardCluster, "id" | "notes">): Promise<void> {
+    firedRef.current.add(cluster.id);
+    if (!(await hasCredits())) return;
+    handOff(buildTeachHandoff(cluster));
+  }
+
+  // Spec D7: auto-teach once a user-made untitled cluster has two seeds.
+  useEffect(() => {
+    if (!board || !autoTeach || isGenerating) return;
+    const cluster = findAutoTeachCluster(board, firedRef.current);
+    if (cluster) void teach(cluster);
+  }, [board, autoTeach, isGenerating]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  );
+
+  function onDragStart(event: DragStartEvent): void {
+    setActiveNote(notesById.get(noteIdFromDragId(String(event.active.id))) ?? null);
+  }
+
+  function onDragEnd(event: DragEndEvent): void {
+    setActiveNote(null);
+    const noteId = noteIdFromDragId(String(event.active.id));
+    const note = notesById.get(noteId);
+    if (!note) return;
+    const action = resolveDrop(noteId, note.clusterId, event.over ? String(event.over.id) : null);
+    if (action.kind === "create-cluster") createCluster.mutate({ noteIds: [action.noteId] });
+    if (action.kind === "move") moveNotes.mutate({ moves: [{ noteId: action.noteId, clusterId: action.clusterId }] });
+  }
+
+  function toggleSelect(noteId: string): void {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(noteId)) next.delete(noteId);
+      else next.add(noteId);
+      return next;
+    });
+  }
+
+  async function moreLikeSelection(): Promise<void> {
+    const noteIds = [...selectedIds];
+    if (noteIds.length < 2) return;
+    try {
+      const created = await createCluster.mutateAsync({ noteIds });
+      setSelectedIds(new Set());
+      if (autoTeach) return; // the auto-teach effect picks up the new untitled two-seed cluster
+      const seeds = noteIds.map((id) => notesById.get(id)).filter((n): n is BoardNote => n !== undefined);
+      await teach({ id: created.id, notes: seeds });
+    } catch {
+      // onError already showed a toast.
+    }
+  }
+
+  function loadSample(): void {
+    importNotes.mutate({ sample: true }, {
+      onSuccess: () => toast.success("Loaded 200 sample notes (pre-sorted starting layout)."),
+    });
+  }
+
+  function changeAutoTeach(value: boolean): void {
+    setAutoTeach(value);
+    writeAutoTeach(value);
+  }
+
+  return (
+    <MotionConfig reducedMotion="user">
+      <div className="stigi" data-agent-state={isGenerating ? "running" : "idle"}>
+        <BoardTopBar
+          totalNotes={board?.totalNotes ?? 0}
+          themeCount={board?.clusters.length ?? 0}
+          unsortedCount={board?.unsorted.length ?? 0}
+          sampleNotes={board?.sampleNotes ?? 0}
+          usage={usage}
+          agentRunning={isGenerating}
+          autoTeach={autoTeach}
+          onAutoTeachChange={changeAutoTeach}
+          sorting={false}
+          onSortToggle={null}
+          onImportCsv={null}
+          onOpenReport={null}
+          onResetBoard={null}
+        />
+        {board === undefined ? (
+          <p className="stigi-meta">Loading your board…</p>
+        ) : board.totalNotes === 0 ? (
+          <EmptyBoard loading={importNotes.isPending} onLoadSample={loadSample} onImportCsv={null} />
+        ) : (
+          <DndContext sensors={sensors} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setActiveNote(null)}>
+            <LayoutGroup>
+              <div className="stigi-board">
+                <div className="stigi-rail">
+                  <NewClusterZone />
+                  <ClusterColumn
+                    dropId={UNSORTED_DROP_ID}
+                    clusterId={null}
+                    title="Unsorted"
+                    untitled={false}
+                    notes={board.unsorted}
+                    selectedIds={selectedIds}
+                    highlightedIds={highlightedIds}
+                    onToggleSelect={toggleSelect}
+                    actions={null}
+                  />
+                </div>
+                <div className="stigi-clusters">
+                  {board.clusters.map((cluster) => (
+                    <ClusterColumn
+                      key={cluster.id}
+                      dropId={clusterDropId(cluster.id)}
+                      clusterId={cluster.id}
+                      title={cluster.name ?? "Untitled"}
+                      untitled={cluster.name === null}
+                      notes={cluster.notes}
+                      selectedIds={selectedIds}
+                      highlightedIds={highlightedIds}
+                      onToggleSelect={toggleSelect}
+                      actions={
+                        <ClusterMenu
+                          clusterName={cluster.name}
+                          agentDisabled={agentBlocked || cluster.notes.length === 0}
+                          onMoreLikeThese={() => void teach(cluster)}
+                          onRename={(name) => renameCluster.mutate({ clusterId: cluster.id, name })}
+                          mergeTargets={[]}
+                          onMerge={null}
+                          onDelete={null}
+                        />
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            </LayoutGroup>
+            <DragOverlay>
+              {activeNote ? (
+                <div className="stigi-note stigi-note--overlay">
+                  <p className="stigi-note__body">{activeNote.body}</p>
+                </div>
+              ) : null}
+            </DragOverlay>
+          </DndContext>
+        )}
+        <SelectionBar
+          count={selectedIds.size}
+          canTeach={!agentBlocked}
+          onMoreLikeThese={() => void moreLikeSelection()}
+          onClear={() => setSelectedIds(new Set())}
+        />
+      </div>
+    </MotionConfig>
+  );
+}
