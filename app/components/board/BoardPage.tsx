@@ -17,6 +17,7 @@ import {
 } from "@agent-native/core/client/hooks";
 import { LayoutGroup, MotionConfig } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
 import { dailyLimitMessage } from "@shared/agent-limits";
@@ -61,6 +62,7 @@ function showError(error: unknown): void {
 
 export function BoardPage() {
   const [isGenerating, sendToAgent] = useAgentChatGenerating();
+  const navigate = useNavigate();
   const boardQuery = useActionQuery("get-board", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS : false });
   const usageQuery = useActionQuery("get-agent-usage", {}, { refetchInterval: isGenerating ? AGENT_POLL_MS * 2 : false });
   const importNotes = useActionMutation("import-notes", { onError: showError });
@@ -293,7 +295,7 @@ export function BoardPage() {
           sorting={sorting}
           onSortToggle={toggleSorting}
           onImportCsv={null}
-          onOpenReport={null}
+          onOpenReport={() => navigate("/board/report")}
           onResetBoard={resetBoardNow}
         />
         {board === undefined ? (
