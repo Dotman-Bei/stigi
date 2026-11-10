@@ -3,18 +3,24 @@
 
 A feedback board where an agent sorts customer comments into themes, you drag two notes to teach it, and it re-sorts the rest.
 
-![Stigi: the agent named a cluster from two dragged notes and moved 14 matching notes in, each with a one-line reason](docs/readme/stigi-board.jpg)
+![The Stigi landing page: "The feedback board for product teams", with the live board beside the headline](docs/readme/stigi-hero.jpg)
 
-*A recorded run on the live app, sample data: the agent named "Plan & billing confusion" and moved 14 notes in, each with an "Agent:" reason chip.*
+*The hero of the live app at https://stigi.suitz.xyz.*
 
 ## Demo
 
 - Demo video (public, hosted on Clips; an uploaded cut of a real run of the live app): https://clips.agent-native.com/share/xcUFzqFhqqei
 - Live app (sign up with any email and password): https://stigi.suitz.xyz
 - Slides: https://stigi-slides.vercel.app ([PDF](https://stigi-slides.vercel.app/stigi-slides.pdf))
-- Screenshot: the image above, and the teach moment, where two dragged notes wait for the agent to name their cluster:
+- Screenshots: the hero above, the payoff, and the teach moment (sample data):
+
+![The agent named "Plan & billing confusion" and moved 14 matching notes in, each with an "Agent:" reason chip](docs/readme/stigi-board.jpg)
+
+*A recorded run on the live app: the agent named the cluster and moved 14 notes in, each with a one-line reason.*
 
 ![Two dragged notes in a new cluster while the agent is naming it](public/landing/assets/shots/board-teach.jpg)
+
+*The teach moment: two dragged notes wait for the agent to name their cluster.*
 
 The live app and the video use **sample data**: 200 synthetic comments for a fictional expenses app, labeled as
 sample in the app and loaded as a deliberately imperfect pre-sorted starting layout.
