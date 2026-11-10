@@ -1,0 +1,23 @@
+{
+  "name": "stigi-demo",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Stigi demo video: Playwright capture, Kokoro narration, Remotion assembly (kept out of the app workspace)",
+  "type": "module",
+  "scripts": {
+    "capture": "node capture/record.mjs",
+    "tts": "tts/.venv/Scripts/python.exe tts/synthesize.py",
+    "studio": "remotion studio src/index.ts",
+    "render": "remotion render src/index.ts Demo out/stigi-demo.mp4 --codec=h264"
+  },
+  "dependencies": {
+    "@remotion/captions": "4.0.542",
+    "@remotion/cli": "4.0.542",
+    "@remotion/media": "4.0.542",
+    "mediabunny": "1.65.2",
+    "playwright": "1.65.0",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.542"
+  }
+}

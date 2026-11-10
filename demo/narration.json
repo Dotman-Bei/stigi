@@ -1,0 +1,38 @@
+[
+  {
+    "id": "T0",
+    "text": "Stigi. A feedback board where you teach an agent by dragging two notes."
+  },
+  {
+    "id": "S1",
+    "text": "This is sample data: two hundred synthetic comments for a fictional expenses app, already filed into themes."
+  },
+  {
+    "id": "S2",
+    "text": "But the plan and billing complaints are scattered across the wrong clusters."
+  },
+  {
+    "id": "S3a",
+    "text": "Drag one onto New cluster. Drag a second. No prompt."
+  },
+  {
+    "id": "S3b",
+    "text": "The agent names the theme, and pulls in every matching note, each with a one-line reason."
+  },
+  {
+    "id": "S4",
+    "text": "Sort with agent files the unsorted pile in one small batch."
+  },
+  {
+    "id": "S5",
+    "text": "Then the agent writes the insight report. Edit a line, and export Markdown."
+  },
+  {
+    "id": "S6",
+    "text": "The board and the agent use the same actions, over one database."
+  },
+  {
+    "id": "O1",
+    "text": "Stigi. Live at stigi dot suitz dot x y z."
+  }
+]

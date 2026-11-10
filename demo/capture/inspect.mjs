@@ -1,0 +1,12 @@
+import { chromium } from "playwright";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const br = await chromium.launch({ headless: true });
+const ctx = await br.newContext({ storageState: path.join(HERE, "auth.json"), viewport: { width: 1920, height: 1080 } });
+const page = await ctx.newPage();
+await page.goto("https://stigi.suitz.xyz/board", { waitUntil: "networkidle" });
+await page.waitForTimeout(2500);
+console.log(JSON.stringify(await page.evaluate(() => [...document.querySelectorAll("section[data-cluster-id]")].map((s) => ({ name: s.dataset.clusterName, notes: s.querySelectorAll("[data-note-id]").length, agent: s.querySelectorAll('[data-moved-by="agent"]').length })))));
+await page.screenshot({ path: "capture/inspect.png" });
+await ctx.close(); await br.close();

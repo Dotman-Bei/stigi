@@ -1,0 +1,15 @@
+node_modules/
+out/
+capture/raw/
+capture/.profile/
+capture/frames/
+tts/.venv/
+tts/audio/
+tts/pip-install.log
+public/scenes/
+public/audio/
+qc/
+capture/auth.json
+capture/.profile/
+capture/*.png
+npm-install.log

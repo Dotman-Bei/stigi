@@ -1,0 +1,103 @@
+[
+  {
+    "name": "S1_start",
+    "t": 0
+  },
+  {
+    "name": "S1_end",
+    "t": 7.67
+  },
+  {
+    "name": "S2_start",
+    "t": 7.67
+  },
+  {
+    "name": "S2_end",
+    "t": 15.92
+  },
+  {
+    "name": "S3_start",
+    "t": 15.92
+  },
+  {
+    "name": "drag1_done",
+    "t": 23.63
+  },
+  {
+    "name": "drag2_done",
+    "t": 33.76
+  },
+  {
+    "name": "teach_running",
+    "t": 35.36
+  },
+  {
+    "name": "glide_start",
+    "t": 55.92
+  },
+  {
+    "name": "teach_idle",
+    "t": 57.35
+  },
+  {
+    "name": "teach_result",
+    "t": 57.98,
+    "taughtName": "Plan & billing confusion",
+    "agentMoved": 14
+  },
+  {
+    "name": "S3_end",
+    "t": 62.49
+  },
+  {
+    "name": "S4_start",
+    "t": 62.49
+  },
+  {
+    "name": "sort_clicked",
+    "t": 64.09,
+    "unsortedBefore": 48
+  },
+  {
+    "name": "sort_done",
+    "t": 89.78,
+    "unsortedAfter": 23
+  },
+  {
+    "name": "S4_end",
+    "t": 93.28
+  },
+  {
+    "name": "S5_start",
+    "t": 93.29
+  },
+  {
+    "name": "report_running",
+    "t": 99.55
+  },
+  {
+    "name": "report_done",
+    "t": 114.6
+  },
+  {
+    "name": "exported",
+    "t": 122.85,
+    "file": "stigi-insight-report-2026-11-10.md"
+  },
+  {
+    "name": "S5_end",
+    "t": 125.36
+  },
+  {
+    "name": "S6_start",
+    "t": 125.36
+  },
+  {
+    "name": "S6_end",
+    "t": 130.37
+  },
+  {
+    "name": "END",
+    "t": 130.37
+  }
+]

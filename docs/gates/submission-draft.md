@@ -2,9 +2,9 @@
 
 Pre-filled by the architect (Step 1, 2026-11-09) from the brief, the spec and the pack's `event.md`.
 Form: https://www.builder.io/hackathon/submit · Deadline: **Mon 2026-11-09 23:59 PT = 2026-11-10 07:59 UTC = 08:59 WAT**
-(Rules: "submit early and verify receipt"). Lines marked `TBD-post-build:` are build outputs: demo-studio is skipped
-for this event, so the gate-concierge closing pass (Step 3) resolves all of them, including the Clips URL the builder
-records. Nothing else is deferred.
+(Rules: "submit early and verify receipt"). Lines marked `TBD-post-build:` are build outputs: demo-studio was first skipped for this
+event; on 2026-11-10 it ran in native mode and resolved the Clips URL (an upload, see below). The gate-concierge closing
+pass (Step 3) resolves the rest. Nothing else is deferred.
 
 ## Form fields (labels and names verbatim from the submit page)
 
@@ -16,7 +16,7 @@ records. Nothing else is deferred.
 | Project name * (`hackathon_project_name`) | yes | **Stigi** |
 | Project description * (`hackathon_project_description`) | yes | The text in "Project description" below |
 | Project or GitHub URL (optional) (`github_project_url`) | no | TBD-post-build:public-repo-url |
-| Public Clips recording URL * (`clip_url`) | yes | TBD-post-build:clips-demo-url |
+| Public Clips recording URL * (`clip_url`) | yes | https://clips.agent-native.com/share/xcUFzqFhqqei (an uploaded MP4 in the builder's Clips library, public; see the note under "Facts the closing pass resolves") |
 | Slides URL (optional) (`slides_url`) | no | Leave empty (no slides) |
 | ☐ Official Rules / eligibility / data-processing consent * (`processingConsent`) | yes | The builder ticks it personally at submission |
 | ☐ Marketing offers and updates (optional) (`marketingConsent`) | no | The builder's choice |
@@ -58,7 +58,7 @@ Team: Dotman-Bei (solo builder), building with Claude Code as an AI pair.
 
 ## Facts the closing pass resolves
 
-- TBD-post-build:clips-demo-url
+- ~~TBD-post-build:clips-demo-url~~ resolved 2026-11-10: https://clips.agent-native.com/share/xcUFzqFhqqei (verified with a logged-out fetch: HTTP 200, the clip's own title, video 98.3 s, no login wall; Library setting: Anyone with the link can view, no password, never expires). **The clip is an UPLOAD of a rendered MP4 (Playwright capture, Kokoro narration, Remotion assembly) to the Clips library, not a Clips screen recording.** The closing pass decides whether to also add a real Clips recording (see the ledger).
 - ~~TBD-post-build:live-app-url~~ resolved 2026-11-09: https://stigi.suitz.xyz (from `e2e/production-url.txt`; deploy:12 gate 3 passed there; final once deploy:52 passes)
 - TBD-post-build:public-repo-url
 
