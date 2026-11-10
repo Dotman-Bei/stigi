@@ -12,9 +12,9 @@ import {
 } from "@agent-native/toolkit/app/chat/ownership-history";
 import { OrgSwitcher } from "@agent-native/toolkit/app/org";
 import { openCommandMenu } from "@agent-native/toolkit/app/shared";
-import { AgentNativeIcon } from "@agent-native/toolkit/app/shared/AgentNativeIcon";
 import {
   IconEdit,
+  IconArrowLeft,
   IconHome,
   IconLayoutKanban,
   IconLayoutSidebarLeftCollapse,
@@ -180,6 +180,37 @@ function HomeNavLink({ collapsed }: { collapsed: boolean }) {
       <Tooltip>
         <TooltipTrigger asChild>{link}</TooltipTrigger>
         <TooltipContent side="right">{t("navigation.home")}</TooltipContent>
+      </Tooltip>
+    );
+  }
+
+  return <div className="px-2">{link}</div>;
+}
+
+/** "/" is the public landing page, served by server/routes/index.get.ts outside React Router: load it as a document. */
+function LandingNavLink({ collapsed }: { collapsed: boolean }) {
+  const link = (
+    <Link
+      to="/"
+      reloadDocument
+      aria-label={collapsed ? "Landing page" : undefined}
+      className={cn(
+        "flex items-center text-sidebar-accent-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+        collapsed
+          ? "size-8 justify-center rounded-md"
+          : "h-8 w-full gap-3 rounded-lg px-3 text-sm font-medium",
+      )}
+    >
+      <IconArrowLeft className="size-4 shrink-0" strokeWidth={1.8} />
+      <span className={collapsed ? "sr-only" : "truncate"}>Landing page</span>
+    </Link>
+  );
+
+  if (collapsed) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>{link}</TooltipTrigger>
+        <TooltipContent side="right">Landing page</TooltipContent>
       </Tooltip>
     );
   }
@@ -405,13 +436,11 @@ export function Sidebar({
             <TooltipTrigger asChild>
               <Link
                 to="/"
+                reloadDocument
                 aria-label={APP_TITLE}
                 className="flex size-8 items-center justify-center rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
               >
-                <AgentNativeIcon
-                  aria-hidden="true"
-                  className="h-3.5 w-6 text-sidebar-accent-foreground"
-                />
+                <img src="/stigi-mark-ink.svg" alt="Stigi" width={24} height={24} className="size-6 shrink-0" />
               </Link>
             </TooltipTrigger>
             <TooltipContent side="right">{APP_TITLE}</TooltipContent>
@@ -420,12 +449,10 @@ export function Sidebar({
           <>
             <Link
               to="/"
+              reloadDocument
               className="flex min-w-0 flex-1 items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
             >
-              <AgentNativeIcon
-                aria-hidden="true"
-                className="h-3.5 w-6 shrink-0 text-sidebar-accent-foreground"
-              />
+              <img src="/stigi-mark-ink.svg" alt="" aria-hidden="true" width={24} height={24} className="size-6 shrink-0" />
               <span className="truncate text-sm font-semibold text-sidebar-accent-foreground">
                 {APP_TITLE}
               </span>
@@ -443,6 +470,7 @@ export function Sidebar({
       >
         <BoardNavLink collapsed={collapsed} />
         <HomeNavLink collapsed={collapsed} />
+        <LandingNavLink collapsed={collapsed} />
         <ChatThreadsSection collapsed={collapsed} />
       </nav>
 
