@@ -97,6 +97,8 @@ _Guide seat: claude-sonnet-5-5 · tier standard · effort high (user-attested). 
 
 - **2026-11-10 ~07:45 WAT — User decisions on the open items (informed, final):** (1) Repo: LEAVE `Dotman-Bei/stigi` PUBLIC as is (option c; the unlicensed third-party design kit under docs/design and the internal docs stay public; user accepts the risk; no secrets in history). (2) Clips: leave the uploaded MP4 as the entry's clip (no real Clips recording, no resubmission). (3) OpenRouter credit ($2.46 left): accepted for judging. (4) Key rotation / unused Google key: ignored.
 
+- **2026-11-10 08:14 WAT — Post-submission polish deployed (before the 08:59 deadline):** (1) logo/favicon integration live (dpl_5HBiwUTiHaHD7zucSvBZCpNnqcbs, 07:14); (2) board->landing navigation fix live (dpl_8Ma8gitPU1E5jxD5ZtPNGAyjACm9, code 971d7be): sidebar brand links and a new "Landing page" item load `/` as a full document; Stigi mark replaces the template icon. Guide re-verified in a real browser on production at 08:25: signed-in sidebar "Landing page" and brand link both reach https://stigi.suitz.xyz/ (hero h1 visible), landing "Try Stigi" returns to /board; favicons 200; agent-chat 200; probe 404. (3) README now opens with the live hero screenshot (c23b53d); launch post saved at docs/launch-post.md (1d198c2). No production deploys after this point.
+
 ## Campaign status: CLOSED
 Steps: 0a done · 0 done · 1 done · 2 done (48 of 50 tasks; landing:62/63 cut by the user) · 2.5 done in demo-studio native style, uploaded to Clips · 3 done by the user by hand (submitted; confirmation user-attested). Live: https://stigi.suitz.xyz · Clip: https://clips.agent-native.com/share/xcUFzqFhqqei · Slides: https://stigi-slides.vercel.app. Winners targeted 2026-11-13.
 
